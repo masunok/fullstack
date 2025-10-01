@@ -9,11 +9,11 @@ AIZEVA 프로젝트에 기여해주셔서 감사합니다! 🎉
 ```bash
 # 1. GitHub에서 Fork 버튼 클릭
 # 2. 본인 계정의 fork를 클론
-git clone https://github.com/YOUR_USERNAME/aizeva.git
-cd aizeva
+git clone https://github.com/masunok/fullstack.git
+cd fullstack
 
 # 3. Upstream 설정
-git remote add upstream https://github.com/ORIGINAL_OWNER/aizeva.git
+git remote add upstream https://github.com/masunok/fullstack.git
 ```
 
 ### 2. 개발 환경 설정
