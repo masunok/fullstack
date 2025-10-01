@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<footer class="bg-gray-800 text-white mt-auto">
+  <div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Company Info -->
+      <div class="company-info">
+        <h3 class="text-lg font-bold mb-4">AIZEVA</h3>
+        <p class="text-gray-300 text-sm">
+          다중 게시판 커뮤니티 서비스
+        </p>
+      </div>
+      
+      <!-- Quick Links -->
+      <div class="quick-links">
+        <h4 class="text-md font-semibold mb-4">빠른 링크</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="/" class="text-gray-300 hover:text-white">홈</a></li>
+          <li><a href="/boards" class="text-gray-300 hover:text-white">게시판</a></li>
+          <li><a href="/boards/notice" class="text-gray-300 hover:text-white">공지사항</a></li>
+          <li><a href="/boards/free" class="text-gray-300 hover:text-white">자유게시판</a></li>
+        </ul>
+      </div>
+      
+      <!-- Contact -->
+      <div class="contact">
+        <h4 class="text-md font-semibold mb-4">문의</h4>
+        <p class="text-gray-300 text-sm">
+          서비스 문의사항이 있으시면<br/>
+          관리자에게 연락해주세요.
+        </p>
+      </div>
+    </div>
+    
+    <!-- Copyright -->
+    <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+      <p class="text-gray-400 text-sm">
+        &copy; 2024 AIZEVA. All rights reserved.
+      </p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,82 @@
+<!-- AIZEVA Footer Component -->
+<footer class="bg-gray-800 text-white mt-auto">
+  <div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Company Info -->
+      <div class="company-info">
+        <h3 class="text-lg font-bold mb-4">AIZEVA</h3>
+        <p class="text-gray-300 text-sm">
+          다중 게시판 커뮤니티 서비스
+        </p>
+        <p class="text-gray-400 text-xs mt-2">
+          다양한 주제로 소통하는 온라인 커뮤니티 플랫폼
+        </p>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="quick-links">
+        <h4 class="text-md font-semibold mb-4">빠른 링크</h4>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a href="/" class="text-gray-300 hover:text-white transition-colors">홈</a>
+          </li>
+          <li>
+            <a href="/boards" class="text-gray-300 hover:text-white transition-colors">게시판</a>
+          </li>
+          <li>
+            <a href="/boards/notice" class="text-gray-300 hover:text-white transition-colors">공지사항</a>
+          </li>
+          <li>
+            <a href="/boards/newsletter" class="text-gray-300 hover:text-white transition-colors">뉴스레터</a>
+          </li>
+          <li>
+            <a href="/boards/free" class="text-gray-300 hover:text-white transition-colors">자유게시판</a>
+          </li>
+          {% if not current_user %}
+          <li>
+            <a href="/auth/login" class="text-gray-300 hover:text-white transition-colors">로그인</a>
+          </li>
+          <li>
+            <a href="/auth/signup" class="text-gray-300 hover:text-white transition-colors">회원가입</a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div class="contact">
+        <h4 class="text-md font-semibold mb-4">문의</h4>
+        <div class="text-gray-300 text-sm space-y-2">
+          <p>
+            서비스 문의사항이 있으시면<br/>
+            관리자에게 연락해주세요.
+          </p>
+          <div class="contact-info mt-4 space-y-1">
+            <p class="text-gray-400 text-xs">
+              이메일: soma@kcc.co.kr
+            </p>
+            <p class="text-gray-400 text-xs">
+              서비스 시간: 24/7
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Copyright -->
+    <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+        <p class="text-gray-400 text-sm mb-2 md:mb-0">
+          &copy; 2025 AIZEVA. All rights reserved.
+        </p>
+        <div class="flex items-center justify-center space-x-4 text-xs text-gray-400">
+          <span class="text-gray-500">개인정보처리방침</span>
+          <span>|</span>
+          <span class="text-gray-500">이용약관</span>
+          <span>|</span>
+          <span>Version 1.0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

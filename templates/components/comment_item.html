@@ -1,0 +1,171 @@
+<!-- Single Comment Item Template for HTMX -->
+<div class="comment-item mb-6" data-comment-id="{{ comment.id }}">
+  <div class="comment-content flex space-x-3">
+    <!-- Avatar placeholder -->
+    <div class="comment-avatar flex-shrink-0">
+      <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+        <span class="text-sm font-medium text-gray-600">
+          {{ comment.users.display_name[0] if comment.users.display_name else comment.users.username[0] }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Comment body -->
+    <div class="comment-body flex-1">
+      <!-- Comment header -->
+      <div class="comment-header mb-2">
+        <div class="flex items-center space-x-2 text-sm">
+          <span class="font-medium text-gray-800">
+            {{ comment.users.display_name or comment.users.username }}
+          </span>
+          <span class="text-gray-500">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+          {% if comment.updated_at and comment.updated_at > comment.created_at %}
+          <span class="text-gray-400 text-xs">(수정됨)</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Comment content -->
+      <div class="comment-text">
+        <p class="text-gray-700 text-sm">{{ comment.content }}</p>
+      </div>
+
+      <!-- Comment actions -->
+      {% if current_user %}
+      <div class="comment-actions mt-3 flex items-center space-x-4">
+        <button
+          class="reply-btn text-blue-600 hover:text-blue-800 text-sm transition-colors"
+          data-comment-id="{{ comment.id }}"
+        >
+          답글
+        </button>
+
+        {% if comment.permissions.update %}
+        <button
+          class="edit-btn text-gray-600 hover:text-gray-800 text-sm transition-colors"
+          data-comment-id="{{ comment.id }}"
+        >
+          수정
+        </button>
+        {% endif %}
+
+        {% if comment.permissions.delete %}
+        <button
+          class="delete-btn text-red-600 hover:text-red-800 text-sm transition-colors"
+          hx-delete="/comments/{{ comment.id }}"
+          hx-target="[data-comment-id='{{ comment.id }}']"
+          hx-confirm="정말로 삭제하시겠습니까?"
+          hx-include="[name='csrf_token']"
+        >
+          삭제
+        </button>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Reply form (hidden by default) -->
+      {% if current_user %}
+      <div class="reply-form mt-4 hidden" data-reply-form="{{ comment.id }}">
+        <form
+          hx-post="/posts/{{ post_id }}/comments"
+          hx-target="#comments-list"
+          hx-include="[name='csrf_token']"
+          class="space-y-3"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+          <input type="hidden" name="parent_id" value="{{ comment.id }}"/>
+
+          <textarea
+            name="content"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            placeholder="답글을 입력하세요..."
+            required
+            maxlength="1000"
+          ></textarea>
+
+          <div class="flex justify-end space-x-2">
+            <button
+              type="button"
+              class="cancel-reply px-3 py-1 text-gray-600 text-sm hover:text-gray-800"
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition-colors"
+            >
+              답글 등록
+            </button>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      <!-- Replies -->
+      {% if comment.replies %}
+      <div class="replies mt-4 ml-6 space-y-4 border-l-2 border-gray-100 pl-4">
+        {% for reply in comment.replies %}
+        <div class="reply-item" data-comment-id="{{ reply.id }}">
+          <div class="flex space-x-2">
+            <!-- Reply avatar -->
+            <div class="reply-avatar flex-shrink-0">
+              <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <span class="text-xs font-medium text-gray-600">
+                  {{ reply.users.display_name[0] if reply.users.display_name else reply.users.username[0] }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Reply body -->
+            <div class="reply-body flex-1">
+              <div class="reply-header mb-1">
+                <div class="flex items-center space-x-2 text-xs">
+                  <span class="font-medium text-gray-700">
+                    {{ reply.users.display_name or reply.users.username }}
+                  </span>
+                  <span class="text-gray-500">{{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                  {% if reply.updated_at and reply.updated_at > reply.created_at %}
+                  <span class="text-gray-400">(수정됨)</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="reply-text">
+                <p class="text-gray-700 text-sm">{{ reply.content }}</p>
+              </div>
+
+              <!-- Reply actions -->
+              {% if current_user and (reply.permissions.update or reply.permissions.delete) %}
+              <div class="reply-actions mt-2 flex items-center space-x-3">
+                {% if reply.permissions.update %}
+                <button
+                  class="edit-btn text-gray-600 hover:text-gray-800 text-xs transition-colors"
+                  data-comment-id="{{ reply.id }}"
+                >
+                  수정
+                </button>
+                {% endif %}
+
+                {% if reply.permissions.delete %}
+                <button
+                  class="delete-btn text-red-600 hover:text-red-800 text-xs transition-colors"
+                  hx-delete="/comments/{{ reply.id }}"
+                  hx-target="[data-comment-id='{{ reply.id }}']"
+                  hx-confirm="정말로 삭제하시겠습니까?"
+                  hx-include="[name='csrf_token']"
+                >
+                  삭제
+                </button>
+                {% endif %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<main class="container mx-auto px-4 py-8">
+  <!-- Admin Header -->
+  <div class="admin-header mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">게시판 관리</h1>
+        <p class="text-gray-600">AIZEVA 게시판들을 관리합니다</p>
+      </div>
+      
+      <!-- Admin Navigation -->
+      <div class="admin-nav">
+        <nav class="flex space-x-4">
+          <a 
+            href="/admin/users" 
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm"
+          >
+            사용자 관리
+          </a>
+          <a 
+            href="/admin/boards" 
+            class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm"
+          >
+            게시판 관리
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Actions Bar -->
+  <div class="actions-bar bg-white p-6 rounded-lg shadow border mb-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <!-- Search -->
+      <div class="search-box flex-1">
+        <div class="flex">
+          <input 
+            type="text" 
+            placeholder="게시판 이름으로 검색..." 
+            class="flex-1 border border-gray-300 rounded-l-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 text-sm">
+            검색
+          </button>
+        </div>
+      </div>
+      
+      <!-- Create Board -->
+      <div class="create-action">
+        <button 
+          class="create-board-btn px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+          data-action="create-board"
+        >
+          + 새 게시판 만들기
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Boards List -->
+  <div class="boards-list bg-white rounded-lg shadow border">
+    <!-- Header -->
+    <div class="list-header p-6 border-b">
+      <h3 class="text-lg font-semibold text-gray-800">
+        게시판 목록 <span class="text-blue-600">({total_boards}개)</span>
+      </h3>
+    </div>
+    
+    <!-- Desktop Table -->
+    <div class="hidden lg:block">
+      <table class="w-full">
+        <thead class="bg-gray-50">
+          <tr class="text-left text-sm font-medium text-gray-700">
+            <th class="p-4">게시판 정보</th>
+            <th class="p-4">권한</th>
+            <th class="p-4">통계</th>
+            <th class="p-4">생성일</th>
+            <th class="p-4">상태</th>
+            <th class="p-4">관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Board Row -->
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-4">
+              <div class="board-info">
+                <div class="font-medium text-gray-800">
+                  <a href="/boards/{slug}" class="hover:text-blue-600">{name}</a>
+                </div>
+                <div class="text-sm text-gray-500">{description}</div>
+                <div class="text-xs text-gray-400">/{slug}</div>
+              </div>
+            </td>
+            
+            <td class="p-4">
+              <span class="inline-block px-2 py-1 text-xs rounded-full 
+                {write_permission === 'all' ? 'bg-green-100 text-green-800' : 
+                 write_permission === 'member' ? 'bg-blue-100 text-blue-800' : 
+                 'bg-red-100 text-red-800'}">
+                {write_permission === 'all' ? '전체 공개' : 
+                 write_permission === 'member' ? '회원만' : '관리자만'}
+              </span>
+            </td>
+            
+            <td class="p-4 text-sm text-gray-600">
+              <div>게시글: {post_count}개</div>
+              <div>댓글: {comment_count}개</div>
+            </td>
+            
+            <td class="p-4 text-sm text-gray-600">{created_at}</td>
+            
+            <td class="p-4">
+              <span class="inline-block px-2 py-1 text-xs rounded-full 
+                {is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                {is_active ? '활성' : '비활성'}
+              </span>
+            </td>
+            
+            <td class="p-4">
+              <div class="flex space-x-2">
+                <button 
+                  class="text-blue-600 hover:text-blue-800 text-sm edit-board-btn"
+                  data-board-id="{id}"
+                >
+                  수정
+                </button>
+                <button 
+                  class="text-gray-600 hover:text-gray-800 text-sm"
+                  data-action="toggle-status" 
+                  data-board-id="{id}"
+                >
+                  {is_active ? '비활성화' : '활성화'}
+                </button>
+                <button 
+                  class="text-red-600 hover:text-red-800 text-sm delete-board-btn"
+                  data-board-id="{id}"
+                >
+                  삭제
+                </button>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- More board rows... -->
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Mobile Cards -->
+    <div class="lg:hidden">
+      <div class="board-cards p-4 space-y-4">
+        <!-- Board Card -->
+        <div class="board-card bg-gray-50 p-4 rounded-lg">
+          <div class="board-info mb-3">
+            <div class="font-medium text-gray-800 mb-1">
+              <a href="/boards/{slug}" class="hover:text-blue-600">{name}</a>
+            </div>
+            <div class="text-sm text-gray-500 mb-2">{description}</div>
+            <div class="text-xs text-gray-400">/{slug}</div>
+          </div>
+          
+          <div class="board-meta flex flex-wrap gap-2 mb-3 text-xs">
+            <span class="px-2 py-1 rounded-full 
+              {write_permission === 'all' ? 'bg-green-100 text-green-800' : 
+               write_permission === 'member' ? 'bg-blue-100 text-blue-800' : 
+               'bg-red-100 text-red-800'}">
+              {write_permission === 'all' ? '전체 공개' : 
+               write_permission === 'member' ? '회원만' : '관리자만'}
+            </span>
+            <span class="px-2 py-1 rounded-full 
+              {is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+              {is_active ? '활성' : '비활성'}
+            </span>
+          </div>
+          
+          <div class="board-stats text-sm text-gray-600 mb-3">
+            <div>게시글: {post_count}개, 댓글: {comment_count}개</div>
+            <div>생성: {created_at}</div>
+          </div>
+          
+          <div class="board-actions flex space-x-2">
+            <button 
+              class="flex-1 py-1 px-3 text-blue-600 border border-blue-600 rounded text-sm hover:bg-blue-50 edit-board-btn"
+              data-board-id="{id}"
+            >
+              수정
+            </button>
+            <button 
+              class="py-1 px-3 text-gray-600 border border-gray-300 rounded text-sm hover:bg-gray-50"
+              data-action="toggle-status" 
+              data-board-id="{id}"
+            >
+              {is_active ? '비활성화' : '활성화'}
+            </button>
+            <button 
+              class="py-1 px-3 text-red-600 border border-red-600 rounded text-sm hover:bg-red-50 delete-board-btn"
+              data-board-id="{id}"
+            >
+              삭제
+            </button>
+          </div>
+        </div>
+        
+        <!-- More board cards... -->
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div class="empty-state text-center py-12 hidden">
+      <div class="text-gray-400 text-6xl mb-4">📋</div>
+      <h3 class="text-lg font-medium text-gray-700 mb-2">아직 게시판이 없습니다</h3>
+      <p class="text-gray-500 mb-4">첫 번째 게시판을 만들어보세요</p>
+      <button 
+        class="create-board-btn px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+        data-action="create-board"
+      >
+        게시판 만들기
+      </button>
+    </div>
+  </div>
+  
+  <!-- Create/Edit Board Modal -->
+  <div class="board-modal fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="modal-content bg-white rounded-lg mx-4 my-8 max-w-lg mx-auto">
+      <div class="modal-header flex items-center justify-between p-6 border-b">
+        <h3 class="text-lg font-semibold modal-title">새 게시판 만들기</h3>
+        <button class="close-modal text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+      </div>
+      
+      <form class="board-form" action="/admin/boards" method="POST">
+        <div class="modal-body p-6">
+          <!-- CSRF Token -->
+          <input type="hidden" name="csrf_token" value="{csrf_token}"/>
+          <input type="hidden" name="_method" value="POST" class="method-field"/>
+          <input type="hidden" name="board_id" value="" class="board-id-field"/>
+          
+          <!-- Board Name -->
+          <div class="form-group mb-4">
+            <label for="board_name" class="block text-sm font-medium text-gray-700 mb-2">
+              게시판 이름 <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="board_name" 
+              name="name" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="게시판 이름을 입력하세요"
+              required
+              maxlength="100"
+            />
+          </div>
+          
+          <!-- Board Slug -->
+          <div class="form-group mb-4">
+            <label for="board_slug" class="block text-sm font-medium text-gray-700 mb-2">
+              URL 슬러그 <span class="text-red-500">*</span>
+            </label>
+            <div class="flex">
+              <span class="bg-gray-50 border border-r-0 border-gray-300 px-3 py-2 text-gray-500 text-sm rounded-l-md">
+                /boards/
+              </span>
+              <input 
+                type="text" 
+                id="board_slug" 
+                name="slug" 
+                class="flex-1 px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="영문소문자, 숫자, 하이픈만 사용"
+                required
+                pattern="[a-z0-9-]+"
+                maxlength="50"
+              />
+            </div>
+            <div class="text-xs text-gray-500 mt-1">영문 소문자, 숫자, 하이픈만 사용 가능</div>
+          </div>
+          
+          <!-- Description -->
+          <div class="form-group mb-4">
+            <label for="board_description" class="block text-sm font-medium text-gray-700 mb-2">
+              설명
+            </label>
+            <textarea 
+              id="board_description" 
+              name="description" 
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="게시판에 대한 간단한 설명을 입력하세요"
+            ></textarea>
+          </div>
+          
+          <!-- Write Permission -->
+          <div class="form-group mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              글쓰기 권한 <span class="text-red-500">*</span>
+            </label>
+            <div class="space-y-2">
+              <label class="flex items-center">
+                <input type="radio" name="write_permission" value="all" class="mr-2"/>
+                <span class="text-sm">전체 공개 - 모든 방문자가 글을 작성할 수 있습니다</span>
+              </label>
+              <label class="flex items-center">
+                <input type="radio" name="write_permission" value="member" class="mr-2" checked/>
+                <span class="text-sm">회원만 - 로그인한 회원만 글을 작성할 수 있습니다</span>
+              </label>
+              <label class="flex items-center">
+                <input type="radio" name="write_permission" value="admin" class="mr-2"/>
+                <span class="text-sm">관리자만 - 관리자만 글을 작성할 수 있습니다</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer flex justify-end p-6 border-t space-x-3">
+          <button 
+            type="button" 
+            class="close-modal px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+          >
+            취소
+          </button>
+          <button 
+            type="submit" 
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 submit-btn"
+          >
+            만들기
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Delete Confirmation Modal -->
+  <div class="delete-modal fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="modal-content bg-white rounded-lg mx-4 my-8 max-w-md mx-auto">
+      <div class="modal-header p-6 border-b">
+        <h3 class="text-lg font-semibold text-red-600">게시판 삭제 확인</h3>
+      </div>
+      
+      <div class="modal-body p-6">
+        <p class="text-gray-700 mb-4">
+          <strong class="delete-board-name"></strong> 게시판을 정말 삭제하시겠습니까?
+        </p>
+        <div class="bg-yellow-50 border border-yellow-200 rounded p-3">
+          <p class="text-yellow-800 text-sm">
+            ⚠️ 게시판과 함께 모든 게시글과 댓글이 삭제되며, 복구할 수 없습니다.
+          </p>
+        </div>
+      </div>
+      
+      <div class="modal-footer flex justify-end p-6 border-t space-x-3">
+        <button 
+          type="button" 
+          class="cancel-delete px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+        >
+          취소
+        </button>
+        <button 
+          type="button" 
+          class="confirm-delete px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          data-board-id=""
+        >
+          삭제하기
+        </button>
+      </div>
+    </div>
+  </div>
+</main>

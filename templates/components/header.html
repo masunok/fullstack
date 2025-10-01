@@ -1,0 +1,194 @@
+<!-- AIZEVA Header Component -->
+<header class="bg-white border-b shadow-sm sticky top-0 z-50">
+  <div class="container mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <!-- Logo -->
+      <div class="logo">
+        <a href="/" class="text-xl font-bold text-blue-600">AIZEVA</a>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex space-x-8">
+        <a href="/" class="text-gray-600 hover:text-blue-600 transition-colors">홈</a>
+        <a href="/boards" class="text-gray-600 hover:text-blue-600 transition-colors">게시판</a>
+        <div class="search-box flex items-center">
+          <form method="GET" action="/search" class="flex">
+            <input
+              type="text"
+              name="q"
+              placeholder="검색..."
+              class="border rounded-l-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <button
+              type="submit"
+              class="px-3 py-1 bg-blue-600 text-white rounded-r-md text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              검색
+            </button>
+          </form>
+        </div>
+      </nav>
+
+      <!-- User Menu -->
+      <div class="user-menu">
+        {% if current_user %}
+        <!-- Logged in -->
+        <div class="logged-in flex items-center space-x-4" id="logged-in-menu">
+          <span class="text-gray-700 text-sm">
+            환영합니다,
+            <span class="font-medium">{{ current_user.display_name or current_user.username }}</span>님
+          </span>
+          {% if current_user.is_admin %}
+          <a
+            href="/admin/users/page"
+            class="px-3 py-1 bg-gray-600 text-white rounded-md text-sm hover:bg-gray-700 transition-colors"
+          >
+            관리자
+          </a>
+          {% endif %}
+          <form method="POST" action="/auth/logout" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+            <button
+              type="submit"
+              class="px-3 py-1 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 transition-colors"
+            >
+              로그아웃
+            </button>
+          </form>
+        </div>
+        {% else %}
+        <!-- Not logged in -->
+        <div class="not-logged-in flex items-center space-x-4" id="not-logged-in-menu">
+          <a
+            href="/auth/login"
+            class="px-3 py-1 border border-blue-600 text-blue-600 rounded-md text-sm hover:bg-blue-50 transition-colors"
+          >
+            로그인
+          </a>
+          <a
+            href="/auth/signup"
+            class="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors"
+          >
+            회원가입
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button
+        class="md:hidden hamburger-btn p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        id="mobile-menu-btn"
+        aria-label="메뉴 열기"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu md:hidden border-t hidden" id="mobile-menu">
+      <div class="pb-3 space-y-1 pt-2">
+        <a href="/" class="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">홈</a>
+        <a href="/boards" class="block px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">게시판</a>
+
+        <!-- Mobile Search -->
+        <div class="px-3 py-2">
+          <form method="GET" action="/search" class="flex">
+            <input
+              type="text"
+              name="q"
+              placeholder="검색..."
+              class="w-full border rounded-l-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <button
+              type="submit"
+              class="px-3 py-1 bg-blue-600 text-white rounded-r-md text-sm hover:bg-blue-700"
+            >
+              검색
+            </button>
+          </form>
+        </div>
+
+        <!-- Mobile User Menu -->
+        {% if current_user %}
+        <div class="px-3 py-2 border-t mt-2 pt-2 space-y-2">
+          <div class="text-sm text-gray-700 mb-2">
+            {{ current_user.display_name or current_user.username }}님
+          </div>
+          {% if current_user.is_admin %}
+          <a
+            href="/admin/users/page"
+            class="block w-full text-left px-3 py-2 bg-gray-600 text-white rounded-md text-sm hover:bg-gray-700"
+          >
+            관리자
+          </a>
+          {% endif %}
+          <form method="POST" action="/auth/logout">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+            <button
+              type="submit"
+              class="block w-full text-left px-3 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
+            >
+              로그아웃
+            </button>
+          </form>
+        </div>
+        {% else %}
+        <div class="px-3 py-2 border-t mt-2 pt-2 space-y-2">
+          <a
+            href="/auth/login"
+            class="block w-full text-center px-3 py-2 border border-blue-600 text-blue-600 rounded-md text-sm hover:bg-blue-50"
+          >
+            로그인
+          </a>
+          <a
+            href="/auth/signup"
+            class="block w-full text-center px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+          >
+            회원가입
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+// Mobile menu toggle
+document.addEventListener('DOMContentLoaded', function() {
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  if (mobileMenuBtn && mobileMenu) {
+    mobileMenuBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      mobileMenu.classList.toggle('hidden');
+
+      // Update aria-label for accessibility
+      const isHidden = mobileMenu.classList.contains('hidden');
+      mobileMenuBtn.setAttribute('aria-label', isHidden ? '메뉴 열기' : '메뉴 닫기');
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+        mobileMenu.classList.add('hidden');
+        mobileMenuBtn.setAttribute('aria-label', '메뉴 열기');
+      }
+    });
+
+    // Close mobile menu on escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.add('hidden');
+        mobileMenuBtn.setAttribute('aria-label', '메뉴 열기');
+        mobileMenuBtn.focus();
+      }
+    });
+  }
+});
+</script>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<main class="container mx-auto px-4 py-8">
+  <!-- Page Header -->
+  <div class="page-header mb-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">게시판</h1>
+    <p class="text-gray-600">다양한 주제의 게시판에서 소통해보세요</p>
+  </div>
+  
+  <!-- Board Grid -->
+  <div class="board-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    
+    <!-- Board Card -->
+    <div class="board-card bg-white p-6 rounded-lg shadow border hover:shadow-md transition-shadow">
+      <div class="board-header mb-4">
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">
+          <a href="/boards/{slug}" class="hover:text-blue-600">{board_name}</a>
+        </h3>
+        <p class="text-gray-600 text-sm">{description}</p>
+      </div>
+      
+      <div class="board-stats mb-4">
+        <div class="flex justify-between text-sm text-gray-500">
+          <span>게시글 {post_count}개</span>
+          <span>댓글 {comment_count}개</span>
+        </div>
+      </div>
+      
+      <div class="board-permission mb-4">
+        <span class="inline-block px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+          {permission_label} <!-- 예: 전체 공개, 회원만, 관리자만 -->
+        </span>
+      </div>
+      
+      <!-- Latest Post Preview -->
+      <div class="latest-post border-t pt-4">
+        <div class="text-xs text-gray-500 mb-1">최근 게시글</div>
+        <div class="latest-post-item">
+          <a href="/posts/{latest_post_id}" class="text-sm text-gray-700 hover:text-blue-600 line-clamp-1">
+            {latest_post_title}
+          </a>
+          <div class="text-xs text-gray-500 mt-1">
+            by {latest_post_author} · {latest_post_date}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Action Button -->
+      <div class="board-actions mt-4">
+        <a 
+          href="/boards/{slug}" 
+          class="inline-block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+        >
+          게시판 입장
+        </a>
+      </div>
+    </div>
+    
+    <!-- More board cards... -->
+    
+    <!-- Add Board Button (Admin Only) -->
+    <div class="board-card bg-gray-50 border-2 border-dashed border-gray-300 p-6 rounded-lg hover:border-blue-400 transition-colors admin-only hidden">
+      <div class="text-center">
+        <div class="text-4xl text-gray-400 mb-4">+</div>
+        <h3 class="text-lg font-medium text-gray-700 mb-2">새 게시판 만들기</h3>
+        <p class="text-sm text-gray-500 mb-4">새로운 게시판을 추가하세요</p>
+        <a 
+          href="/admin/boards/create" 
+          class="inline-block px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm"
+        >
+          게시판 만들기
+        </a>
+      </div>
+    </div>
+    
+  </div>
+  
+  <!-- Empty State -->
+  <div class="empty-state text-center py-12 hidden">
+    <div class="text-gray-400 text-6xl mb-4">📋</div>
+    <h3 class="text-lg font-medium text-gray-700 mb-2">아직 게시판이 없습니다</h3>
+    <p class="text-gray-500">첫 번째 게시판을 만들어보세요</p>
+  </div>
+</main>

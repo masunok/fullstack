@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}게시판 - AIZEVA{% endblock %}
+
+{% block content %}
+<main class="container mx-auto px-4 py-8">
+  <!-- Page Header -->
+  <div class="page-header mb-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">게시판</h1>
+    <p class="text-gray-600">다양한 주제의 게시판에서 소통해보세요</p>
+  </div>
+
+  <!-- Board Grid -->
+  <div class="board-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for board in boards %}
+    <!-- Board Card -->
+    <div class="board-card bg-white p-6 rounded-lg shadow border hover:shadow-md transition-shadow">
+      <div class="board-header mb-4">
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">
+          <a href="/boards/{{ board.slug }}" class="hover:text-blue-600 transition-colors">
+            {{ board.name }}
+          </a>
+        </h3>
+        <p class="text-gray-600 text-sm">{{ board.description }}</p>
+      </div>
+
+      <div class="board-stats mb-4">
+        <div class="flex justify-between text-sm text-gray-500">
+          <span>게시글 {{ board.post_count or 0 }}개</span>
+          <span>댓글 {{ board.comment_count or 0 }}개</span>
+        </div>
+      </div>
+
+      <div class="board-permission mb-4">
+        <span class="inline-block px-2 py-1 text-xs rounded-full {% if board.write_permission == 'all' %}bg-green-100 text-green-600{% elif board.write_permission == 'member' %}bg-blue-100 text-blue-600{% else %}bg-gray-100 text-gray-600{% endif %}">
+          {% if board.write_permission == 'all' %}
+            전체 공개
+          {% elif board.write_permission == 'member' %}
+            회원만
+          {% else %}
+            관리자만
+          {% endif %}
+        </span>
+      </div>
+
+      <!-- Latest Post Preview -->
+      {% if board.latest_post %}
+      <div class="latest-post border-t pt-4">
+        <div class="text-xs text-gray-500 mb-1">최근 게시글</div>
+        <div class="latest-post-item">
+          <a
+            href="/posts/{{ board.latest_post.id }}"
+            class="text-sm text-gray-700 hover:text-blue-600 line-clamp-1 transition-colors"
+          >
+            {{ board.latest_post.title }}
+          </a>
+          <div class="text-xs text-gray-500 mt-1">
+            by {{ board.latest_post.author_name }} · {{ board.latest_post.created_at.strftime('%m-%d %H:%M') }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Action Button -->
+      <div class="board-actions mt-4">
+        <a
+          href="/boards/{{ board.slug }}"
+          class="inline-block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition-colors"
+        >
+          게시판 입장
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Latest Posts Section -->
+  {% if latest_posts %}
+  <div class="latest-posts-section mt-12 bg-white rounded-lg shadow border">
+    <div class="posts-header p-6 border-b">
+      <h2 class="text-2xl font-bold text-gray-800">최신 게시글</h2>
+      <p class="text-gray-600 mt-1">모든 게시판의 최신 게시글을 확인하세요</p>
+    </div>
+
+    <!-- Posts Table -->
+    <div class="posts-table overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-gray-50 border-b">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">제목</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">게시판</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">작성자</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">조회수</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작성일</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for post in latest_posts %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <!-- Title -->
+            <td class="px-6 py-4">
+              <div class="text-sm">
+                <a href="/posts/{{ post.id }}" class="text-gray-900 hover:text-blue-600 font-medium transition-colors">
+                  {{ post.title }}
+                </a>
+                <div class="text-xs text-gray-500 mt-1 sm:hidden">
+                  {{ post.author_name }} · {{ post.board_name }}
+                </div>
+              </div>
+            </td>
+
+            <!-- Board (hidden on mobile) -->
+            <td class="px-6 py-4 hidden md:table-cell">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {{ post.board_name }}
+              </span>
+            </td>
+
+            <!-- Author (hidden on small screens) -->
+            <td class="px-6 py-4 hidden sm:table-cell">
+              <div class="text-sm text-gray-900">{{ post.author_name }}</div>
+            </td>
+
+            <!-- View Count (hidden on large screens and below) -->
+            <td class="px-6 py-4 hidden lg:table-cell">
+              <div class="text-sm text-gray-500">{{ post.view_count or 0 }}</div>
+            </td>
+
+            <!-- Date -->
+            <td class="px-6 py-4">
+              <div class="text-sm text-gray-500">
+                {{ post.created_at[:16] if post.created_at is string else post.created_at.strftime('%m-%d %H:%M') }}
+              </div>
+              <div class="text-xs text-gray-400 lg:hidden">조회 {{ post.view_count or 0 }}</div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- View All Posts Link -->
+    <div class="posts-footer p-4 border-t bg-gray-50 text-center">
+      <a href="/search?q=" class="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors">
+        모든 게시글 보기 →
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Empty State -->
+  {% if not boards %}
+  <div class="empty-state text-center py-12">
+    <div class="text-gray-400 text-6xl mb-4">📋</div>
+    <h3 class="text-lg font-medium text-gray-700 mb-2">아직 게시판이 없습니다</h3>
+    <p class="text-gray-500 mb-4">첫 번째 게시판을 만들어보세요</p>
+    {% if current_user and current_user.is_admin %}
+    <a
+      href="/admin/boards"
+      class="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+    >
+      게시판 만들기
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Board Statistics (Optional) -->
+  {% if boards %}
+  <div class="board-statistics mt-12 bg-gray-50 rounded-lg p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">커뮤니티 통계</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+      <div class="stat-item">
+        <div class="text-2xl font-bold text-blue-600">{{ boards|length }}</div>
+        <div class="text-sm text-gray-600">게시판</div>
+      </div>
+      <div class="stat-item">
+        <div class="text-2xl font-bold text-green-600">{{ total_posts or 0 }}</div>
+        <div class="text-sm text-gray-600">총 게시글</div>
+      </div>
+      <div class="stat-item">
+        <div class="text-2xl font-bold text-purple-600">{{ total_comments or 0 }}</div>
+        <div class="text-sm text-gray-600">총 댓글</div>
+      </div>
+      <div class="stat-item">
+        <div class="text-2xl font-bold text-orange-600">{{ total_users or 0 }}</div>
+        <div class="text-sm text-gray-600">회원수</div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</main>
+
+<script>
+// Board card hover effects
+document.addEventListener('DOMContentLoaded', function() {
+  const boardCards = document.querySelectorAll('.board-card');
+
+  boardCards.forEach(card => {
+    card.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-2px)';
+    });
+
+    card.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,632 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - {{ board.name }} - AIZEVA{% endblock %}
+
+{% block content %}
+<main class="container mx-auto px-4 py-8">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb mb-6">
+    <div class="text-sm text-gray-500">
+      <a href="/" class="hover:text-blue-600 transition-colors">홈</a>
+      <span class="mx-2">></span>
+      <a href="/boards" class="hover:text-blue-600 transition-colors">게시판</a>
+      <span class="mx-2">></span>
+      <a href="/boards/{{ board.slug }}" class="hover:text-blue-600 transition-colors">{{ board.name }}</a>
+      <span class="mx-2">></span>
+      <span class="text-gray-800 truncate">{{ post.title[:30] }}{% if post.title|length > 30 %}...{% endif %}</span>
+    </div>
+  </nav>
+
+  <!-- Post Content -->
+  <article class="post-article bg-white rounded-lg shadow border mb-8">
+    <!-- Post Header -->
+    <header class="post-header p-6 border-b">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">{{ post.title }}</h1>
+
+      <!-- Post Meta -->
+      <div class="post-meta flex flex-col md:flex-row md:items-center md:justify-between text-sm text-gray-500">
+        <div class="meta-left flex items-center space-x-4 mb-2 md:mb-0">
+          <div class="date">{{ post.created_at[:16] if post.created_at is string else post.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+          <div class="author">
+            <span class="font-medium text-gray-700">{{ post.users.display_name or post.users.username }}</span>
+            {% if post.users and post.users.is_admin %}
+            <span class="ml-1 px-1.5 py-0.5 bg-red-100 text-red-600 text-xs rounded">관리자</span>
+            {% endif %}
+          </div>
+          <div class="views">조회 {{ post.view_count or 0 }}</div>
+          {% if post.updated_at and post.updated_at > post.created_at %}
+          <div class="updated text-gray-400">(수정됨)</div>
+          {% endif %}
+        </div>
+
+        <!-- Post Actions (Owner/Admin only) -->
+        {% if current_user and (current_user.id == post.user_id or current_user.is_admin) %}
+        <div class="post-actions flex space-x-2">
+          <a
+            href="/posts/{{ post.id }}/edit"
+            class="px-3 py-1 text-blue-600 border border-blue-600 rounded hover:bg-blue-50 text-sm transition-colors"
+          >
+            수정
+          </a>
+          <button
+            class="delete-btn px-3 py-1 text-red-600 border border-red-600 rounded hover:bg-red-50 text-sm transition-colors"
+            data-post-id="{{ post.id }}"
+            onclick="confirmDelete({{ post.id }})"
+          >
+            삭제
+          </button>
+        </div>
+        {% endif %}
+      </div>
+    </header>
+
+    <!-- Post Body -->
+    <div class="post-body p-6">
+      <div class="prose max-w-none post-content" style="white-space: pre-line;">
+        {{ post.content|safe }}
+      </div>
+    </div>
+
+    <!-- Post Footer -->
+    <footer class="post-footer p-6 border-t bg-gray-50">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+        <!-- Tags or Categories (if implemented) -->
+        <div class="post-tags mb-4 md:mb-0">
+          <!-- Reserved for future tag implementation -->
+        </div>
+
+        <!-- Share and Actions -->
+        <div class="post-share flex items-center space-x-4">
+          <button
+            onclick="copyUrl()"
+            class="px-3 py-1 text-gray-600 border border-gray-300 rounded hover:bg-gray-100 text-sm transition-colors"
+          >
+            링크 복사
+          </button>
+          <a
+            href="/boards/{{ board.slug }}"
+            class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm transition-colors"
+          >
+            목록으로
+          </a>
+        </div>
+      </div>
+    </footer>
+  </article>
+
+  <!-- Post Navigation -->
+  <div class="post-navigation bg-white rounded-lg shadow border mb-8 p-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+      <!-- Previous Post -->
+      {% if prev_post %}
+      <div class="prev-post flex-1 md:mr-4">
+        <div class="text-xs text-gray-500 mb-1">이전 글</div>
+        <a
+          href="/posts/{{ prev_post.id }}"
+          class="text-gray-700 hover:text-blue-600 text-sm font-medium transition-colors line-clamp-1"
+        >
+          {{ prev_post.title }}
+        </a>
+      </div>
+      {% else %}
+      <div class="flex-1"></div>
+      {% endif %}
+
+      <!-- Divider -->
+      <div class="hidden md:block w-px h-12 bg-gray-200 mx-4"></div>
+
+      <!-- Next Post -->
+      {% if next_post %}
+      <div class="next-post flex-1 md:ml-4 text-right">
+        <div class="text-xs text-gray-500 mb-1">다음 글</div>
+        <a
+          href="/posts/{{ next_post.id }}"
+          class="text-gray-700 hover:text-blue-600 text-sm font-medium transition-colors line-clamp-1"
+        >
+          {{ next_post.title }}
+        </a>
+      </div>
+      {% else %}
+      <div class="flex-1"></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Comments Section -->
+  <section class="comments-section bg-white rounded-lg shadow border">
+    <!-- Comments Header -->
+    <header class="comments-header p-6 border-b">
+      <h3 class="text-lg font-semibold text-gray-800">
+        댓글 <span class="comment-count text-blue-600">{{ comments|length }}</span>
+      </h3>
+    </header>
+
+    <!-- Comment Form (for logged in users) -->
+    {% if current_user %}
+      {% if board.slug in ['notice', 'newsletter'] and not current_user.is_admin %}
+      <!-- Admin-only comment notice for notice/newsletter boards -->
+      <div class="comment-form p-6 border-b bg-gray-50">
+        <div class="text-center py-8">
+          <div class="text-gray-400 text-3xl mb-4">🔒</div>
+          <h4 class="text-lg font-medium text-gray-700 mb-2">관리자 전용 댓글</h4>
+          <p class="text-gray-500">이 게시판은 관리자만 댓글을 작성할 수 있습니다.</p>
+        </div>
+      </div>
+      {% else %}
+      <!-- Regular comment form -->
+      <div class="comment-form p-6 border-b bg-gray-50">
+        <form action="/posts/{{ post.id }}/comments" method="POST" class="space-y-4">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+
+          <div class="form-group">
+            <label for="comment-content" class="block text-sm font-medium text-gray-700 mb-2">
+              댓글 작성
+            </label>
+            <textarea
+              id="comment-content"
+              name="content"
+              rows="4"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              placeholder="댓글을 입력하세요..."
+              required
+              maxlength="1000"
+            ></textarea>
+            <div class="text-xs text-gray-500 mt-1 text-right">
+              <span class="char-count">0</span>/1000
+            </div>
+          </div>
+
+          <div class="form-actions flex justify-end">
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition-colors"
+            >
+              댓글 등록
+            </button>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+    {% else %}
+    <!-- Login prompt for non-logged users -->
+    <div class="comment-login-prompt p-6 border-b bg-gray-50 text-center">
+      <p class="text-gray-600 mb-4">댓글을 작성하려면 로그인이 필요합니다.</p>
+      <div class="space-x-2">
+        <a
+          href="/auth/login"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition-colors"
+        >
+          로그인
+        </a>
+        <a
+          href="/auth/signup"
+          class="px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 text-sm transition-colors"
+        >
+          회원가입
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Comments List -->
+    <div class="comments-list" id="comments-list">
+      {% if comments %}
+        {% for comment in comments %}
+        <div class="comment-item p-6 border-b last:border-b-0" data-comment-id="{{ comment.id }}">
+          <!-- Main Comment -->
+          <div class="comment-main">
+            <div class="comment-header flex items-center justify-between mb-3">
+              <div class="comment-author flex items-center space-x-2">
+                <span class="comment-date text-xs text-gray-500">
+                  {{ comment.created_at[:16] if comment.created_at is string else comment.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </span>
+                <span class="separator text-xs text-gray-400">·</span>
+                <span class="author-name font-medium text-gray-700">
+                  {{ comment.users.display_name or comment.users.username }}
+                </span>
+                {% if comment.users and comment.users.is_admin %}
+                <span class="admin-badge px-1.5 py-0.5 bg-red-100 text-red-600 text-xs rounded">관리자</span>
+                {% endif %}
+                {% if comment.updated_at and comment.updated_at > comment.created_at %}
+                <span class="updated-badge text-xs text-gray-400">(수정됨)</span>
+                {% endif %}
+              </div>
+
+              <!-- Comment Actions -->
+              <div class="comment-actions flex items-center space-x-2">
+                {% if current_user and (board.slug not in ['notice', 'newsletter'] or current_user.is_admin) %}
+                <button
+                  onclick="toggleReplyForm({{ comment.id }})"
+                  class="reply-btn text-blue-600 hover:text-blue-800 text-xs transition-colors"
+                >
+                  답글
+                </button>
+                {% endif %}
+
+                {% if current_user and (current_user.id == comment.user_id or current_user.is_admin) %}
+                <button
+                  onclick="editComment({{ comment.id }})"
+                  class="edit-btn text-gray-600 hover:text-gray-800 text-xs transition-colors"
+                >
+                  수정
+                </button>
+                <button
+                  onclick="deleteComment({{ comment.id }})"
+                  class="delete-btn text-red-600 hover:text-red-800 text-xs transition-colors"
+                >
+                  삭제
+                </button>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="comment-content text-gray-800" style="white-space: pre-line;">
+              {{ comment.content|safe }}
+            </div>
+          </div>
+
+          <!-- Reply Form (hidden by default) -->
+          <div class="reply-form hidden mt-4 ml-6 p-4 bg-gray-50 rounded-md" id="reply-form-{{ comment.id }}">
+            <form action="/posts/{{ post.id }}/comments" method="POST" class="space-y-3">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+              <input type="hidden" name="parent_id" value="{{ comment.id }}"/>
+
+              <textarea
+                name="content"
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                placeholder="답글을 입력하세요..."
+                required
+                maxlength="1000"
+              ></textarea>
+
+              <div class="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onclick="toggleReplyForm({{ comment.id }})"
+                  class="px-3 py-1 text-gray-600 border border-gray-300 rounded text-sm hover:bg-gray-100 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+                >
+                  답글 등록
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Replies -->
+          {% if comment.replies %}
+          <div class="replies ml-6 mt-4 space-y-4">
+            {% for reply in comment.replies %}
+            <div class="reply-item border-l-2 border-blue-200 pl-4">
+              <div class="reply-header flex items-center justify-between mb-2">
+                <div class="reply-author flex items-center space-x-2">
+                  <span class="reply-date text-xs text-gray-500">
+                    {{ reply.created_at[:16] if reply.created_at is string else reply.created_at.strftime('%Y-%m-%d %H:%M') }}
+                  </span>
+                  <span class="separator text-xs text-gray-400">·</span>
+                  <span class="author-name font-medium text-gray-700 text-sm">
+                    {{ reply.users.display_name or reply.users.username }}
+                  </span>
+                  {% if reply.users and reply.users.is_admin %}
+                  <span class="admin-badge px-1.5 py-0.5 bg-red-100 text-red-600 text-xs rounded">관리자</span>
+                  {% endif %}
+                </div>
+
+                {% if current_user and (current_user.id == reply.user_id or current_user.is_admin) %}
+                <div class="reply-actions flex items-center space-x-2">
+                  <button
+                    onclick="editComment({{ reply.id }})"
+                    class="edit-btn text-gray-600 hover:text-gray-800 text-xs transition-colors"
+                  >
+                    수정
+                  </button>
+                  <button
+                    onclick="deleteComment({{ reply.id }})"
+                    class="delete-btn text-red-600 hover:text-red-800 text-xs transition-colors"
+                  >
+                    삭제
+                  </button>
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="reply-content text-gray-800 text-sm" style="white-space: pre-line;">
+                {{ reply.content|safe }}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+      <!-- Empty Comments State -->
+      <div class="empty-comments text-center py-12">
+        <div class="text-gray-400 text-4xl mb-4">💬</div>
+        <h4 class="text-lg font-medium text-gray-700 mb-2">아직 댓글이 없습니다</h4>
+        <p class="text-gray-500">첫 번째 댓글을 작성해보세요!</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+</main>
+
+<!-- Delete Confirmation Modal -->
+<!-- 일반 삭제 확인 모달 -->
+<div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">삭제 확인</h3>
+      <p class="text-gray-600 mb-6">정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</p>
+      <div class="flex justify-end space-x-3">
+        <button
+          onclick="closeDeleteModal()"
+          class="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+        >
+          취소
+        </button>
+        <button
+          id="confirm-delete-btn"
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+        >
+          삭제
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 댓글 확인 모달 -->
+<div id="comment-check-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg p-6 max-w-lg w-full">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">⚠️ 게시글 삭제 안내</h3>
+      <div id="comment-warning-content" class="text-gray-600 mb-6">
+        <!-- 동적으로 내용이 설정됩니다 -->
+      </div>
+      <div class="flex justify-end space-x-3">
+        <button
+          onclick="closeCommentCheckModal()"
+          class="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+        >
+          취소
+        </button>
+        <button
+          id="force-delete-btn"
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors hidden"
+        >
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Character counter for comment form
+document.addEventListener('DOMContentLoaded', function() {
+  const commentTextarea = document.getElementById('comment-content');
+  const charCount = document.querySelector('.char-count');
+
+  if (commentTextarea && charCount) {
+    commentTextarea.addEventListener('input', function() {
+      charCount.textContent = this.value.length;
+    });
+  }
+});
+
+// Reply form toggle
+function toggleReplyForm(commentId) {
+  const replyForm = document.getElementById(`reply-form-${commentId}`);
+  if (replyForm) {
+    replyForm.classList.toggle('hidden');
+    if (!replyForm.classList.contains('hidden')) {
+      const textarea = replyForm.querySelector('textarea');
+      if (textarea) {
+        textarea.focus();
+      }
+    }
+  }
+}
+
+// Copy URL function
+function copyUrl() {
+  navigator.clipboard.writeText(window.location.href).then(function() {
+    alert('링크가 클립보드에 복사되었습니다.');
+  });
+}
+
+// Delete confirmation
+let deleteType = '';
+let deleteId = 0;
+
+async function confirmDelete(postId) {
+  deleteType = 'post';
+  deleteId = postId;
+
+  try {
+    // 게시글 삭제 전 댓글 상태 확인
+    const response = await fetch(`/posts/${postId}/check-comments`, {
+      method: 'GET',
+      credentials: 'same-origin'
+    });
+
+    if (response.ok) {
+      const commentData = await response.json();
+
+      if (commentData.has_others_comments) {
+        // 타인의 댓글이 있는 경우
+        showCommentWarning(commentData);
+      } else if (commentData.total_comments > 0) {
+        // 작성자의 댓글만 있는 경우
+        showOwnCommentsWarning(commentData);
+      } else {
+        // 댓글이 없는 경우 바로 삭제 확인
+        document.getElementById('delete-modal').classList.remove('hidden');
+      }
+    } else {
+      // API 호출 실패 시 기본 모달 표시
+      document.getElementById('delete-modal').classList.remove('hidden');
+    }
+  } catch (error) {
+    console.error('댓글 확인 실패:', error);
+    // 에러 시 기본 모달 표시
+    document.getElementById('delete-modal').classList.remove('hidden');
+  }
+}
+
+function showCommentWarning(commentData) {
+  const warningContent = document.getElementById('comment-warning-content');
+  warningContent.innerHTML = `
+    <div class="space-y-3">
+      <p class="text-red-600 font-medium">❌ 게시글을 삭제할 수 없습니다.</p>
+      <p>이 게시글에는 <strong>${commentData.others_comments}개의 타인이 작성한 댓글/답글</strong>이 있습니다.</p>
+      <p class="text-gray-700">댓글이나 답글 작성자가 먼저 댓글이나 답글을 삭제한 후 삭제해주세요.</p>
+      <div class="bg-gray-100 p-3 rounded-md text-sm">
+        <p>• 전체 댓글/답글: ${commentData.total_comments}개</p>
+        <p>• 타인의 댓글/답글: ${commentData.others_comments}개</p>
+        <p>• 내 댓글/답글: ${commentData.own_comments}개</p>
+      </div>
+    </div>
+  `;
+
+  // 확인 버튼 숨기기
+  document.getElementById('force-delete-btn').classList.add('hidden');
+  document.getElementById('comment-check-modal').classList.remove('hidden');
+}
+
+function showOwnCommentsWarning(commentData) {
+  const warningContent = document.getElementById('comment-warning-content');
+  warningContent.innerHTML = `
+    <div class="space-y-3">
+      <p class="text-orange-600 font-medium">⚠️ 댓글과 함께 삭제됩니다.</p>
+      <p>이 게시글에는 <strong>${commentData.own_comments}개의 내가 작성한 댓글/답글</strong>이 있습니다.</p>
+      <p class="text-gray-700">게시글을 삭제하면 해당 글에 달린 <strong>모든 댓글과 답글이 함께 삭제</strong>됩니다.</p>
+      <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-md text-sm">
+        <p class="text-yellow-800">• 전체 댓글/답글: ${commentData.total_comments}개 (모두 삭제됨)</p>
+        <p class="text-yellow-800">• 이 작업은 되돌릴 수 없습니다.</p>
+      </div>
+      <p class="text-red-600 font-medium">정말로 삭제하시겠습니까?</p>
+    </div>
+  `;
+
+  // 확인 버튼 표시
+  document.getElementById('force-delete-btn').classList.remove('hidden');
+  document.getElementById('comment-check-modal').classList.remove('hidden');
+}
+
+function deleteComment(commentId) {
+  deleteType = 'comment';
+  deleteId = commentId;
+  document.getElementById('delete-modal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+  document.getElementById('delete-modal').classList.add('hidden');
+}
+
+function closeCommentCheckModal() {
+  document.getElementById('comment-check-modal').classList.add('hidden');
+}
+
+// Confirm delete button handler
+document.getElementById('confirm-delete-btn').addEventListener('click', function() {
+  console.log('삭제 확인 버튼 클릭됨');
+  console.log('deleteType:', deleteType);
+  console.log('deleteId:', deleteId);
+  
+  if (deleteType === 'post') {
+    console.log('게시글 삭제 시작');
+    
+    // 간단한 방법: window.location을 사용한 POST 대신 직접 서버 호출
+    try {
+      console.log('fetch를 사용한 삭제 요청');
+      
+      const formData = new FormData();
+      formData.append('csrf_token', '{{ csrf_token }}');
+      formData.append('force_delete', 'true');  // 강제 삭제로 변경
+      
+      fetch(`/posts/${deleteId}/delete`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',  // 쿠키 포함
+        redirect: 'follow'
+      })
+      .then(response => {
+        console.log('삭제 응답:', response.status, response.statusText);
+        console.log('응답 헤더:', [...response.headers.entries()]);
+        
+        if (response.ok || response.status === 302) {
+          console.log('삭제 성공, 리다이렉트 처리');
+          // 수동으로 게시판 목록으로 이동
+          window.location.href = '/boards/free';
+        } else {
+          console.error('삭제 실패:', response.status, response.statusText);
+          
+          // 응답 본문도 확인
+          response.text().then(text => {
+            console.error('응답 내용:', text);
+            alert(`삭제에 실패했습니다. (${response.status}: ${response.statusText})`);
+          });
+        }
+      })
+      .catch(error => {
+        console.error('삭제 요청 오류:', error);
+        alert('삭제 중 오류가 발생했습니다.');
+      });
+      
+    } catch (error) {
+      console.error('삭제 처리 오류:', error);
+      alert('삭제 처리 중 오류가 발생했습니다.');
+    }
+  } else if (deleteType === 'comment') {
+    // Create form to delete comment
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/comments/${deleteId}/delete`;
+    form.innerHTML = `
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+    `;
+    document.body.appendChild(form);
+    form.submit();
+  }
+});
+
+// Force delete button handler (for posts with own comments)
+document.getElementById('force-delete-btn').addEventListener('click', function() {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = `/posts/${deleteId}/delete`;
+  form.innerHTML = `
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+    <input type="hidden" name="force_delete" value="true"/>
+  `;
+  document.body.appendChild(form);
+  form.submit();
+});
+
+// Edit comment (placeholder)
+function editComment(commentId) {
+  // TODO: Implement inline comment editing
+  alert('댓글 수정 기능은 추후 구현 예정입니다.');
+}
+
+// Close modal when clicking outside
+document.getElementById('delete-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeDeleteModal();
+  }
+});
+
+document.getElementById('comment-check-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeCommentCheckModal();
+  }
+});
+</script>
+{% endblock %}

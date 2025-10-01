@@ -1,0 +1,577 @@
+{% extends "base.html" %}
+
+{% block title %}사용자 관리 - AIZEVA 관리자{% endblock %}
+
+{% block content %}
+<main class="container mx-auto px-4 py-8">
+  <!-- Admin Header -->
+  <div class="admin-header mb-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">사용자 관리</h1>
+        <p class="text-gray-600">AIZEVA 사용자들을 관리합니다</p>
+      </div>
+
+      <!-- Admin Navigation -->
+      <div class="admin-nav mt-4 md:mt-0">
+        <nav class="flex space-x-4">
+          <a
+            href="/admin/users/page"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm transition-colors"
+          >
+            사용자 관리
+          </a>
+          <a
+            href="/admin/boards/page"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm transition-colors"
+          >
+            게시판 관리
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div id="stats-section" class="stats-cards grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="stat-card bg-white p-6 rounded-lg shadow border">
+      <div class="flex items-center">
+        <div class="stat-icon bg-blue-100 p-3 rounded-full mr-4">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-gray-800">{{ stats.total_users or 0 }}</div>
+          <div class="text-sm text-gray-600">총 사용자</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card bg-white p-6 rounded-lg shadow border">
+      <div class="flex items-center">
+        <div class="stat-icon bg-green-100 p-3 rounded-full mr-4">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-gray-800">{{ stats.active_users or 0 }}</div>
+          <div class="text-sm text-gray-600">활성 사용자</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card bg-white p-6 rounded-lg shadow border">
+      <div class="flex items-center">
+        <div class="stat-icon bg-purple-100 p-3 rounded-full mr-4">
+          <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-gray-800">{{ stats.admin_count or 0 }}</div>
+          <div class="text-sm text-gray-600">관리자</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card bg-white p-6 rounded-lg shadow border">
+      <div class="flex items-center">
+        <div class="stat-icon bg-orange-100 p-3 rounded-full mr-4">
+          <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-gray-800">{{ stats.new_users_today or 0 }}</div>
+          <div class="text-sm text-gray-600">오늘 신규</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="filters-section bg-white p-6 rounded-lg shadow border mb-6">
+    <form method="GET" action="/admin/users/page" class="flex flex-col md:flex-row gap-4">
+      <!-- Search -->
+      <div class="search-box flex-1">
+        <div class="flex">
+          <select name="search_type" class="border border-gray-300 rounded-l-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="all" {% if request.query_params.get('search_type') == 'all' %}selected{% endif %}>전체</option>
+            <option value="username" {% if request.query_params.get('search_type') == 'username' %}selected{% endif %}>사용자명</option>
+            <option value="email" {% if request.query_params.get('search_type') == 'email' %}selected{% endif %}>이메일</option>
+            <option value="display_name" {% if request.query_params.get('search_type') == 'display_name' %}selected{% endif %}>표시이름</option>
+          </select>
+          <input
+            type="text"
+            name="q"
+            value="{{ request.query_params.get('q', '') }}"
+            placeholder="검색어를 입력하세요"
+            class="flex-1 border-t border-b border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 text-sm transition-colors"
+          >
+            검색
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters flex gap-2">
+        <select name="role" class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">모든 권한</option>
+          <option value="admin" {% if request.query_params.get('role') == 'admin' %}selected{% endif %}>관리자</option>
+          <option value="user" {% if request.query_params.get('role') == 'user' %}selected{% endif %}>일반 사용자</option>
+        </select>
+
+        <select name="sort" class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="created_desc" {% if request.query_params.get('sort') == 'created_desc' %}selected{% endif %}>가입일순 (최신)</option>
+          <option value="created_asc" {% if request.query_params.get('sort') == 'created_asc' %}selected{% endif %}>가입일순 (오래된)</option>
+          <option value="username_asc" {% if request.query_params.get('sort') == 'username_asc' %}selected{% endif %}>사용자명순</option>
+          <option value="posts_desc" {% if request.query_params.get('sort') == 'posts_desc' %}selected{% endif %}>게시글 많은순</option>
+        </select>
+      </div>
+    </form>
+  </div>
+
+  <!-- Users Table -->
+  <div class="users-table bg-white rounded-lg shadow border">
+    <!-- Table Header -->
+    <div class="table-header hidden md:grid md:grid-cols-11 bg-gray-50 border-b p-4 text-sm font-medium text-gray-700">
+      <div class="col-span-2">사용자명</div>
+      <div class="col-span-3">이메일</div>
+      <div class="col-span-2">표시이름</div>
+      <div class="col-span-1 text-center">권한</div>
+      <div class="col-span-1 text-center">게시글</div>
+      <div class="col-span-1 text-center">가입일시</div>
+      <div class="col-span-1 text-center">작업</div>
+    </div>
+
+    <!-- Table Body -->
+    <div class="table-body">
+      {% for user in users %}
+      <div class="user-row border-b last:border-b-0 p-4 hover:bg-gray-50 transition-colors">
+        <!-- Desktop Layout -->
+        <div class="hidden md:grid md:grid-cols-11 items-center">
+          <div class="col-span-2">
+            <div class="font-medium text-gray-800">{{ user.username }}</div>
+          </div>
+          <div class="col-span-3">
+            <div class="text-gray-600 text-sm">{{ user.email }}</div>
+          </div>
+          <div class="col-span-2">
+            <div class="text-gray-600 text-sm">{{ user.display_name or '-' }}</div>
+          </div>
+          <div class="col-span-1 text-center">
+            {% if user.is_admin %}
+            <span class="inline-block px-2 py-1 bg-red-100 text-red-600 text-xs rounded-full">관리자</span>
+            {% else %}
+            <span class="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">사용자</span>
+            {% endif %}
+          </div>
+          <div class="col-span-1 text-center text-sm text-gray-600">
+            {{ user.post_count or 0 }}
+          </div>
+          <div class="col-span-1 text-center text-sm text-gray-500">
+            {% if user.created_at %}
+              {% if user.created_at is string %}
+                {{ user.created_at[2:10] + ' ' + user.created_at[11:16] }}
+              {% else %}
+                {{ user.created_at.strftime('%y-%m-%d %H:%M') }}
+              {% endif %}
+            {% else %}
+              -
+            {% endif %}
+          </div>
+          <div class="col-span-1 text-center">
+            <div class="flex items-center justify-center space-x-1">
+              {% if current_user and user.id == current_user.id %}
+                <span class="text-xs text-gray-500">본인</span>
+              {% else %}
+                {% if user.is_admin %}
+                  <button
+                    onclick="demoteUser('{{ user.id }}', '{{ user.username }}')"
+                    class="px-2 py-1 text-xs bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors"
+                  >
+                    강등
+                  </button>
+                {% else %}
+                  <button
+                    onclick="promoteUser('{{ user.id }}', '{{ user.username }}')"
+                    class="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                  >
+                    승급
+                  </button>
+                {% endif %}
+                {% if not user.is_admin or stats.admin_count > 1 %}
+                <button
+                  onclick="confirmDeleteUser('{{ user.id }}', '{{ user.username }}')"
+                  class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                >
+                  삭제
+                </button>
+                {% endif %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Layout -->
+        <div class="md:hidden">
+          <div class="flex items-center justify-between mb-2">
+            <div class="user-info">
+              <div class="font-medium text-gray-800">{{ user.username }}</div>
+              <div class="text-sm text-gray-600">{{ user.email }}</div>
+            </div>
+            <div class="user-badge">
+              {% if user.is_admin %}
+              <span class="inline-block px-2 py-1 bg-red-100 text-red-600 text-xs rounded-full">관리자</span>
+              {% else %}
+              <span class="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">사용자</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="user-stats text-xs text-gray-500 mb-2">
+            <span>게시글 {{ user.post_count or 0 }}개</span>
+            <span class="mx-2">·</span>
+            <span>
+              {% if user.created_at %}
+                {% if user.created_at is string %}
+                  {{ user.created_at[2:10] + ' ' + user.created_at[11:16] }}
+                {% else %}
+                  {{ user.created_at.strftime('%y-%m-%d %H:%M') }}
+                {% endif %}
+                가입
+              {% else %}
+                - 가입
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="user-actions flex space-x-2">
+            {% if current_user and user.id == current_user.id %}
+              <span class="px-3 py-1 text-xs text-gray-500 border border-gray-300 rounded">본인</span>
+            {% else %}
+              {% if user.is_admin %}
+                <button
+                  onclick="demoteUser('{{ user.id }}', '{{ user.username }}')"
+                  class="px-3 py-1 text-xs bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors"
+                >
+                  강등
+                </button>
+              {% else %}
+                <button
+                  onclick="promoteUser('{{ user.id }}', '{{ user.username }}')"
+                  class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                >
+                  승급
+                </button>
+              {% endif %}
+              {% if not user.is_admin or stats.admin_count > 1 %}
+              <button
+                onclick="confirmDeleteUser('{{ user.id }}', '{{ user.username }}')"
+                class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              >
+                삭제
+              </button>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Empty State -->
+    {% if not users %}
+    <div class="empty-state text-center py-12">
+      <div class="text-gray-400 text-6xl mb-4">👥</div>
+      <h3 class="text-lg font-medium text-gray-700 mb-2">사용자를 찾을 수 없습니다</h3>
+      {% if request.query_params.get('q') %}
+      <p class="text-gray-500 mb-4">검색 조건을 변경해보세요</p>
+      <a
+        href="/admin/users/page"
+        class="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+      >
+        전체 사용자 보기
+      </a>
+      {% else %}
+      <p class="text-gray-500">아직 등록된 사용자가 없습니다</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Pagination -->
+  {% if pagination and pagination.total_pages > 1 %}
+  <div class="pagination mt-8">
+    <div class="flex justify-center">
+      <nav class="pagination-nav flex items-center space-x-2">
+        {% if pagination.has_prev %}
+        <a
+          href="/admin/users/page?page=1"
+          class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+        >
+          처음
+        </a>
+        <a
+          href="/admin/users/page?page={{ pagination.prev_num }}"
+          class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+        >
+          이전
+        </a>
+        {% endif %}
+
+        <!-- Current page indicator -->
+        <span class="px-3 py-2 text-sm bg-blue-600 text-white border border-blue-600 rounded-md">
+          {{ pagination.page }}
+        </span>
+        <span class="px-2 py-2 text-sm text-gray-500">/ {{ pagination.total_pages }}</span>
+
+        {% if pagination.has_next %}
+        <a
+          href="/admin/users/page?page={{ pagination.next_num }}"
+          class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+        >
+          다음
+        </a>
+        <a
+          href="/admin/users/page?page={{ pagination.total_pages }}"
+          class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+        >
+          끝
+        </a>
+        {% endif %}
+      </nav>
+    </div>
+  </div>
+  {% endif %}
+
+</main>
+
+<!-- Confirmation Modal -->
+<div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+      <h3 class="text-lg font-medium text-gray-900 mb-4" id="modal-title">확인</h3>
+      <p class="text-gray-600 mb-6" id="modal-message">작업을 계속하시겠습니까?</p>
+      <div class="flex justify-end space-x-3">
+        <button
+          onclick="closeModal()"
+          class="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+        >
+          취소
+        </button>
+        <button
+          id="confirm-action-btn"
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+        >
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// User role management
+function promoteUser(userId, username) {
+  showConfirmModal(
+    '관리자 승급',
+    `사용자 "${username}"을(를) 관리자로 승급하시겠습니까?`,
+    async () => {
+      try {
+        const response = await fetch(`/admin/users/${userId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({
+            is_admin: true
+          })
+        });
+
+        if (response.ok) {
+          window.location.reload();
+        } else {
+          const error = await response.json();
+          alert(`승급 실패: ${error.detail || '알 수 없는 오류'}`);
+        }
+      } catch (error) {
+        alert(`승급 중 오류 발생: ${error.message}`);
+      }
+    }
+  );
+}
+
+function demoteUser(userId, username) {
+  showConfirmModal(
+    '관리자 강등',
+    `사용자 "${username}"의 관리자 권한을 제거하시겠습니까?`,
+    async () => {
+      try {
+        const response = await fetch(`/admin/users/${userId}/demote`, {
+          method: 'PUT',
+          headers: {
+            'X-CSRF-Token': '{{ csrf_token }}'
+          }
+        });
+
+        if (response.ok) {
+          window.location.reload();
+        } else {
+          const error = await response.json();
+          alert(`강등 실패: ${error.detail || '알 수 없는 오류'}`);
+        }
+      } catch (error) {
+        alert(`강등 중 오류 발생: ${error.message}`);
+      }
+    }
+  );
+}
+
+// User deletion
+async function confirmDeleteUser(userId, username) {
+  try {
+    // 먼저 사용자의 게시글/댓글 존재 여부 확인
+    const contentResponse = await fetch(`/admin/users/${userId}/content-check`);
+
+    if (!contentResponse.ok) {
+      alert('사용자 정보 확인 중 오류가 발생했습니다.');
+      return;
+    }
+
+    const contentInfo = await contentResponse.json();
+    
+    // 콘텐츠 정보를 항상 표시 (게시글이나 댓글이 있든 없든)
+    if (contentInfo.has_content || contentInfo.posts_count > 0 || contentInfo.comments_count > 0) {
+      let contentDetails = `사용자 "${username}"이(가) 작성한 콘텐츠:\n\n`;
+      contentDetails += `📝 게시글: ${contentInfo.posts_count}개\n`;
+      contentDetails += `💬 댓글/답글: ${contentInfo.comments_count}개\n`;
+
+      if (contentInfo.replies_count > 0) {
+        contentDetails += `   (답글 ${contentInfo.replies_count}개 포함)\n`;
+      }
+
+      if (contentInfo.participated_posts_count > 0) {
+        contentDetails += `🏷️ 참여한 게시글: ${contentInfo.participated_posts_count}개\n`;
+      }
+
+      if (contentInfo.recent_posts && contentInfo.recent_posts.length > 0) {
+        contentDetails += `\n📋 최근 게시글:\n`;
+        contentInfo.recent_posts.forEach((post, index) => {
+          contentDetails += `${index + 1}. ${post.title} (${post.created_at})\n`;
+        });
+      }
+
+      if (contentInfo.recent_comments && contentInfo.recent_comments.length > 0) {
+        contentDetails += `\n💭 최근 댓글:\n`;
+        contentInfo.recent_comments.forEach((comment, index) => {
+          const type = comment.is_reply ? '답글' : '댓글';
+          contentDetails += `${index + 1}. [${type}] ${comment.content} (${comment.created_at})\n`;
+        });
+      }
+
+      contentDetails += `\n⚠️ 이 작업은 사용자를 삭제합니다.\n`;
+      contentDetails += `사용자는 삭제되지만 작성한 게시글과 댓글은 보존됩니다.`;
+
+      showEnhancedConfirmModal(
+        `콘텐츠가 있는 사용자 삭제`,
+        contentDetails,
+        () => performUserDeletion(userId, username),
+        'warning'
+      );
+    } else {
+      // 콘텐츠가 없는 경우 기본 확인
+      showConfirmModal(
+        '사용자 삭제',
+        `정말로 사용자 "${username}"을(를) 삭제하시겠습니까?\n\n사용자는 삭제되지만 데이터는 보존됩니다.`,
+        () => performUserDeletion(userId, username)
+      );
+    }
+  } catch (error) {
+    alert(`사용자 정보 확인 중 오류 발생: ${error.message}`);
+  }
+}
+
+// 실제 사용자 삭제 수행
+async function performUserDeletion(userId, username) {
+  try {
+    const response = await fetch(`/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-Token': '{{ csrf_token }}'
+      }
+    });
+
+    if (response.ok || response.status === 204) {
+      // 성공 시 페이지 새로고침
+      window.location.reload();
+    } else {
+      const error = await response.json().catch(() => ({detail: '알 수 없는 오류'}));
+      alert(`사용자 삭제 실패: ${error.detail || '알 수 없는 오류'}`);
+    }
+  } catch (error) {
+    alert(`사용자 삭제 중 오류 발생: ${error.message}`);
+  }
+}
+
+
+
+// Modal management
+function showConfirmModal(title, message, onConfirm) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-message').textContent = message;
+  document.getElementById('confirm-action-btn').onclick = () => {
+    closeModal();
+    onConfirm();
+  };
+  document.getElementById('confirm-modal').classList.remove('hidden');
+}
+
+function showEnhancedConfirmModal(title, message, onConfirm, type = 'danger') {
+  const modal = document.getElementById('confirm-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const modalMessage = document.getElementById('modal-message');
+  const confirmBtn = document.getElementById('confirm-action-btn');
+
+  modalTitle.textContent = title;
+  modalMessage.style.whiteSpace = 'pre-line'; // 줄바꿈 표시
+  modalMessage.textContent = message;
+
+  // 버튼 스타일 변경
+  confirmBtn.className = type === 'warning'
+    ? 'px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors'
+    : 'px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors';
+
+  confirmBtn.onclick = () => {
+    closeModal();
+    onConfirm();
+  };
+
+  modal.classList.remove('hidden');
+}
+
+function closeModal() {
+  const modal = document.getElementById('confirm-modal');
+  const modalMessage = document.getElementById('modal-message');
+
+  // 스타일 초기화
+  modalMessage.style.whiteSpace = 'normal';
+  modal.classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('confirm-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeModal();
+  }
+});
+</script>
+{% endblock %}

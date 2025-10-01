@@ -1,0 +1,702 @@
+{% extends "base.html" %}
+
+{% block title %}게시판 관리 - AIZEVA 관리자{% endblock %}
+
+{% block content %}
+<main class="container mx-auto px-4 py-8">
+  <!-- Admin Header -->
+  <div class="admin-header mb-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">게시판 관리</h1>
+        <p class="text-gray-600">AIZEVA 게시판들을 관리합니다</p>
+      </div>
+
+      <!-- Admin Navigation -->
+      <div class="admin-nav mt-4 md:mt-0">
+        <nav class="flex space-x-4">
+          <a
+            href="/admin/users/page"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm transition-colors"
+          >
+            사용자 관리
+          </a>
+          <a
+            href="/admin/boards/page"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm transition-colors"
+          >
+            게시판 관리
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions Bar -->
+  <div id="stats-section" class="actions-bar bg-white p-6 rounded-lg shadow border mb-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <!-- Search -->
+      <div class="search-box flex-1">
+        <form method="GET" action="/admin/boards/page" class="flex">
+          <input
+            type="text"
+            name="q"
+            value="{{ request.query_params.get('q', '') }}"
+            placeholder="게시판 이름으로 검색..."
+            class="flex-1 border border-gray-300 rounded-l-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 text-sm transition-colors"
+          >
+            검색
+          </button>
+        </form>
+      </div>
+
+      <!-- Create Board -->
+      <div class="create-action">
+        <button
+          onclick="showCreateBoardModal()"
+          class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm transition-colors"
+        >
+          새 게시판 만들기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success/Error Messages -->
+  {% if request.query_params.get('message') %}
+  <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-6">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm font-medium text-green-800">
+          {{ request.query_params.get('message') }}
+        </p>
+      </div>
+      <div class="ml-auto pl-3">
+        <div class="-mx-1.5 -my-1.5">
+          <button type="button" onclick="this.parentElement.parentElement.parentElement.parentElement.style.display='none'" class="inline-flex rounded-md p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-50 focus:ring-green-600">
+            <span class="sr-only">Dismiss</span>
+            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if request.query_params.get('error') %}
+  <div class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm font-medium text-red-800">
+          {{ request.query_params.get('error') }}
+        </p>
+      </div>
+      <div class="ml-auto pl-3">
+        <div class="-mx-1.5 -my-1.5">
+          <button type="button" onclick="this.parentElement.parentElement.parentElement.parentElement.style.display='none'" class="inline-flex rounded-md p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-50 focus:ring-red-600">
+            <span class="sr-only">Dismiss</span>
+            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Boards Grid -->
+  <div class="boards-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for board in boards %}
+    <div class="board-card bg-white p-6 rounded-lg shadow border hover:shadow-md transition-shadow">
+      <!-- Board Header -->
+      <div class="board-header mb-4">
+        <div class="flex items-start justify-between mb-2">
+          <h3 class="text-lg font-semibold text-gray-800">{{ board.name }}</h3>
+          <div class="board-actions flex space-x-1">
+            <button
+              onclick="editBoard({{ board.id }})"
+              class="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+              title="편집"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </button>
+            <button
+              onclick="confirmDeleteBoard({{ board.id }}, '{{ board.name }}')"
+              class="p-1 text-gray-500 hover:text-red-600 transition-colors"
+              title="삭제"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="text-gray-600 text-sm mb-3">{{ board.description }}</p>
+        <div class="board-slug text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">
+          /boards/{{ board.slug }}
+        </div>
+      </div>
+
+      <!-- Board Stats -->
+      <div class="board-stats mb-4">
+        <div class="grid grid-cols-2 gap-4 text-center">
+          <div class="stat">
+            <div class="text-lg font-bold text-blue-600">{{ board.post_count or 0 }}</div>
+            <div class="text-xs text-gray-600">게시글</div>
+          </div>
+          <div class="stat">
+            <div class="text-lg font-bold text-green-600">{{ board.comment_count or 0 }}</div>
+            <div class="text-xs text-gray-600">댓글</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Board Settings -->
+      <div class="board-settings mb-4">
+        <div class="setting-item flex justify-between items-center mb-2">
+          <span class="text-sm text-gray-600">작성 권한</span>
+          <span class="inline-block px-2 py-1 text-xs rounded-full {% if board.write_permission == 'all' %}bg-green-100 text-green-600{% elif board.write_permission == 'member' %}bg-blue-100 text-blue-600{% else %}bg-gray-100 text-gray-600{% endif %}">
+            {% if board.write_permission == 'all' %}
+              전체 공개
+            {% elif board.write_permission == 'member' %}
+              회원만
+            {% else %}
+              관리자만
+            {% endif %}
+          </span>
+        </div>
+        <div class="setting-item flex justify-between items-center">
+          <span class="text-sm text-gray-600">생성일</span>
+          <span class="text-sm text-gray-500">{{ board.created_at[:10] if board.created_at else '' }}</span>
+        </div>
+      </div>
+
+      <!-- Latest Activity -->
+      {% if board.latest_post %}
+      <div class="latest-activity border-t pt-4">
+        <div class="text-xs text-gray-500 mb-1">최근 게시글</div>
+        <div class="latest-post">
+          <a
+            href="/posts/{{ board.latest_post.id }}"
+            class="text-sm text-gray-700 hover:text-blue-600 line-clamp-1 transition-colors"
+          >
+            {{ board.latest_post.title }}
+          </a>
+          <div class="text-xs text-gray-500 mt-1">
+            by {{ board.latest_post.author_name }} · {{ board.latest_post.created_at[:16] if board.latest_post.created_at else '' }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Quick Actions -->
+      <div class="quick-actions mt-4 pt-4 border-t">
+        <div class="flex space-x-2">
+          <a
+            href="/boards/{{ board.slug }}"
+            class="flex-1 text-center px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+          >
+            게시판 보기
+          </a>
+          <button
+            onclick="editBoard({{ board.id }})"
+            class="flex-1 text-center px-3 py-2 border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50 transition-colors"
+          >
+            편집
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Empty State -->
+  {% if not boards %}
+  <div class="empty-state text-center py-12">
+    {% if request.query_params.get('q') %}
+    <div class="text-gray-400 text-6xl mb-4">🔍</div>
+    <h3 class="text-lg font-medium text-gray-700 mb-2">검색 결과가 없습니다</h3>
+    <p class="text-gray-500 mb-4">다른 검색어로 시도해보세요</p>
+    <a
+      href="/admin/boards/page"
+      class="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+    >
+      전체 게시판 보기
+    </a>
+    {% else %}
+    <div class="text-gray-400 text-6xl mb-4">📋</div>
+    <h3 class="text-lg font-medium text-gray-700 mb-2">아직 게시판이 없습니다</h3>
+    <p class="text-gray-500 mb-4">첫 번째 게시판을 만들어보세요</p>
+    <button
+      onclick="showCreateBoardModal()"
+      class="inline-block px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+    >
+      게시판 만들기
+    </button>
+    {% endif %}
+  </div>
+  {% endif %}
+</main>
+
+<!-- Create/Edit Board Modal -->
+<div id="board-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+      <h3 class="text-lg font-medium text-gray-900 mb-4" id="board-modal-title">새 게시판 만들기</h3>
+
+      <form id="board-form" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+        <input type="hidden" id="board-id" name="board_id" value=""/>
+
+        <!-- Board Name -->
+        <div class="form-group mb-4">
+          <label for="board-name" class="block text-sm font-medium text-gray-700 mb-2">
+            게시판 이름 <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="board-name"
+            name="name"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="게시판 이름을 입력하세요"
+            required
+            maxlength="100"
+          />
+        </div>
+
+        <!-- Board Slug -->
+        <div class="form-group mb-4">
+          <label for="board-slug" class="block text-sm font-medium text-gray-700 mb-2">
+            URL 슬러그 <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="board-slug"
+            name="slug"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="영문자, 숫자, 하이픈만 사용"
+            required
+            maxlength="50"
+            pattern="^[a-z0-9-]+$"
+          />
+          <div class="text-xs text-gray-500 mt-1">URL: /boards/<span id="slug-preview"></span></div>
+        </div>
+
+        <!-- Board Description -->
+        <div class="form-group mb-4">
+          <label for="board-description" class="block text-sm font-medium text-gray-700 mb-2">
+            설명
+          </label>
+          <textarea
+            id="board-description"
+            name="description"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="게시판에 대한 설명을 입력하세요"
+            maxlength="500"
+          ></textarea>
+        </div>
+
+        <!-- Write Permission -->
+        <div class="form-group mb-6">
+          <label for="write-permission" class="block text-sm font-medium text-gray-700 mb-2">
+            작성 권한 <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="write-permission"
+            name="write_permission"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="all">전체 공개 (비회원도 가능)</option>
+            <option value="member" selected>회원만 작성 가능</option>
+            <option value="admin">관리자만 작성 가능</option>
+          </select>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3">
+          <button
+            type="button"
+            onclick="closeBoardModal()"
+            class="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+          >
+            취소
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            저장
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">게시판 삭제</h3>
+      <p class="text-gray-600 mb-6" id="delete-message">
+        정말로 이 게시판을 삭제하시겠습니까? 게시판 내의 모든 게시글과 댓글이 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+      </p>
+      <div class="flex justify-end space-x-3">
+        <button
+          onclick="closeDeleteModal()"
+          class="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-100 transition-colors"
+        >
+          취소
+        </button>
+        <button
+          id="confirm-delete-btn"
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+        >
+          삭제
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Board creation/editing
+function showCreateBoardModal() {
+  document.getElementById('board-modal-title').textContent = '새 게시판 만들기';
+  document.getElementById('board-form').action = '/admin/boards';
+  document.getElementById('board-id').value = '';
+  document.getElementById('board-name').value = '';
+  document.getElementById('board-slug').value = '';
+  document.getElementById('board-description').value = '';
+  document.getElementById('write-permission').value = 'member';
+  
+  // 슬러그 미리보기도 초기화
+  const slugPreview = document.getElementById('slug-preview');
+  if (slugPreview) {
+    slugPreview.textContent = '';
+  }
+  
+  document.getElementById('board-modal').classList.remove('hidden');
+  document.getElementById('board-name').focus();
+  
+  console.log('Modal opened - fields reset');
+}
+
+async function editBoard(boardId) {
+  try {
+    // 게시판 데이터 조회
+    const response = await fetch(`/admin/boards/${boardId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('게시판 정보를 가져올 수 없습니다');
+    }
+
+    const data = await response.json();
+    const board = data.board;
+
+    // 모달 제목 및 폼 설정
+    document.getElementById('board-modal-title').textContent = '게시판 편집';
+    document.getElementById('board-form').action = `/admin/boards/${boardId}`;
+    document.getElementById('board-form').method = 'POST';
+    document.getElementById('board-id').value = boardId;
+    
+    // 새로운 CSRF 토큰으로 업데이트
+    if (data.csrf_token) {
+      const csrfInput = document.querySelector('input[name="csrf_token"]');
+      if (csrfInput) {
+        csrfInput.value = data.csrf_token;
+        console.log('Updated CSRF Token in edit mode:', data.csrf_token);
+      }
+    }
+
+    // 기존 데이터로 폼 채우기
+    document.getElementById('board-name').value = board.name || '';
+    document.getElementById('board-slug').value = board.slug || '';
+    document.getElementById('board-slug').readOnly = true; // 슬러그는 편집 시 변경 불가
+    document.getElementById('board-description').value = board.description || '';
+    document.getElementById('write-permission').value = board.write_permission || 'member';
+
+    // 슬러그 미리보기 업데이트
+    const slugPreview = document.getElementById('slug-preview');
+    if (slugPreview) {
+      slugPreview.textContent = board.slug || '';
+    }
+
+    // Hidden input for HTTP method override (PUT)
+    let methodInput = document.getElementById('method-override');
+    if (!methodInput) {
+      methodInput = document.createElement('input');
+      methodInput.type = 'hidden';
+      methodInput.name = '_method';
+      methodInput.id = 'method-override';
+      document.getElementById('board-form').appendChild(methodInput);
+    }
+    methodInput.value = 'PUT';
+
+    // 모달 표시
+    document.getElementById('board-modal').classList.remove('hidden');
+    document.getElementById('board-name').focus();
+
+  } catch (error) {
+    console.error('게시판 편집 오류:', error);
+    alert('게시판 정보를 불러오는데 실패했습니다: ' + error.message);
+  }
+}
+
+function closeBoardModal() {
+  document.getElementById('board-modal').classList.add('hidden');
+  
+  // 폼 리셋 (편집 모드에서 나올 때)
+  document.getElementById('board-form').reset();
+  document.getElementById('board-slug').readOnly = false; // 슬러그 편집 가능하게 복원
+  
+  // Method override 제거
+  const methodInput = document.getElementById('method-override');
+  if (methodInput) {
+    methodInput.remove();
+  }
+  
+  // 슬러그 미리보기 초기화
+  const slugPreview = document.getElementById('slug-preview');
+  if (slugPreview) {
+    slugPreview.textContent = '';
+  }
+}
+
+// Korean to English slug conversion - Updated 2025-09-29
+function koreanToSlug(text) {
+  console.log('=== SLUG DEBUG START ===');
+  console.log('Input:', text, 'Type:', typeof text, 'Length:', text.length);
+  
+  // 특수 케이스 직접 처리 (가장 우선)
+  const directMappings = {
+    '질문': 'question',
+    '공지사항': 'notice',
+    '공지': 'notice',
+    '자유게시판': 'free', 
+    '자유': 'free',
+    '답변': 'answer',
+    '뉴스': 'news',
+    '이벤트': 'event',
+    '갤러리': 'gallery',
+    '토론': 'discussion',
+    '건의': 'suggestion'
+  };
+
+  const trimmedText = text.trim();
+  console.log('Trimmed:', trimmedText);
+  
+  // 직접 매핑 확인
+  if (directMappings.hasOwnProperty(trimmedText)) {
+    console.log('Direct mapping found:', trimmedText, '->', directMappings[trimmedText]);
+    console.log('=== SLUG DEBUG END ===');
+    return directMappings[trimmedText];
+  }
+  
+  // 추가 단어들
+  const additionalWords = {
+    'Q&A': 'qna',
+    '질문게시판': 'question',
+    '홍보': 'promotion',
+    '리뷰': 'review',
+    '신고': 'report',
+    '사진': 'photo',
+    '동영상': 'video',
+    '음악': 'music',
+    '게임': 'game',
+    '스포츠': 'sports',
+    '정치': 'politics',
+    '경제': 'economy',
+    '사회': 'society',
+    '문화': 'culture',
+    '기술': 'tech',
+    '과학': 'science',
+    '교육': 'education',
+    '취업': 'job',
+    '여행': 'travel',
+    '요리': 'cooking',
+    '건강': 'health',
+    '연애': 'love',
+    '결혼': 'marriage',
+    '육아': 'parenting'
+  };
+
+  let result = trimmedText;
+  console.log('Processing additional words...');
+  
+  // 추가 단어 매칭
+  const allWords = {...directMappings, ...additionalWords};
+  const sortedWords = Object.entries(allWords).sort((a, b) => b[0].length - a[0].length);
+  
+  for (const [korean, english] of sortedWords) {
+    if (result.includes(korean)) {
+      console.log('Found partial match:', korean, '->', english);
+      result = result.replace(new RegExp(korean, 'g'), english);
+    }
+  }
+  
+  console.log('After word replacement:', result);
+  
+  // 남은 한글과 특수문자 처리
+  result = result
+    .toLowerCase()
+    .replace(/[가-힣]/g, '')          // 한글 제거
+    .replace(/[^a-z0-9\s-]/g, '-')   // 특수문자 → 하이픈
+    .replace(/\s+/g, '-')            // 공백 → 하이픈
+    .replace(/-+/g, '-')             // 연속 하이픈 정리
+    .replace(/^-|-$/g, '');          // 앞뒤 하이픈 제거
+  
+  console.log('After cleanup:', result);
+  
+  // 빈 문자열 처리
+  if (!result || result === '') {
+    result = 'board-' + Date.now().toString().slice(-6);
+    console.log('Empty result, using fallback:', result);
+  }
+  
+  console.log('Final result:', result);
+  console.log('=== SLUG DEBUG END ===');
+  return result;
+}
+
+// Slug generation
+document.addEventListener('DOMContentLoaded', function() {
+  const nameInput = document.getElementById('board-name');
+  const slugInput = document.getElementById('board-slug');
+  const slugPreview = document.getElementById('slug-preview');
+
+  nameInput.addEventListener('input', function() {
+    // 항상 슬러그를 업데이트 (사용자가 수동으로 수정하지 않은 경우)
+    // 또는 슬러그가 비어있거나 이전에 자동생성된 경우
+    const currentSlug = slugInput.value;
+    const isAutoGenerated = !currentSlug || currentSlug.startsWith('board-') || 
+                           ['question', 'notice', 'free', 'answer', 'discussion'].includes(currentSlug);
+    
+    if (!currentSlug || isAutoGenerated || currentSlug === '') {
+      console.log('Updating slug for input:', this.value);
+      const slug = koreanToSlug(this.value);
+      slugInput.value = slug;
+      slugPreview.textContent = slug;
+    }
+  });
+
+  slugInput.addEventListener('input', function() {
+    slugPreview.textContent = this.value;
+  });
+
+  // Form submission
+  document.getElementById('board-form').addEventListener('submit', function(e) {
+    const slug = slugInput.value;
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      e.preventDefault();
+      alert('슬러그는 영문 소문자, 숫자, 하이픈만 사용할 수 있습니다.');
+      return;
+    }
+  });
+});
+
+// Board deletion
+let deleteTargetId = 0;
+
+function confirmDeleteBoard(boardId, boardName) {
+  deleteTargetId = boardId;
+  document.getElementById('delete-message').innerHTML =
+    `정말로 "<strong>${boardName}</strong>" 게시판을 삭제하시겠습니까? 게시판 내의 모든 게시글과 댓글이 함께 삭제됩니다. 이 작업은 되돌릴 수 없습니다.`;
+  document.getElementById('delete-modal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+  document.getElementById('delete-modal').classList.add('hidden');
+  deleteTargetId = 0;
+}
+
+document.getElementById('confirm-delete-btn').addEventListener('click', function() {
+  if (deleteTargetId) {
+    // 현재 페이지에서 CSRF 토큰 가져오기
+    const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || 
+                      document.querySelector('meta[name="csrf-token"]')?.content ||
+                      '{{ csrf_token }}';
+    
+    if (!csrfToken) {
+      alert('CSRF 토큰을 찾을 수 없습니다. 페이지를 새로고침하고 다시 시도하세요.');
+      return;
+    }
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/admin/boards/${deleteTargetId}/delete`;
+    form.innerHTML = `
+      <input type="hidden" name="csrf_token" value="${csrfToken}"/>
+    `;
+    document.body.appendChild(form);
+    form.submit();
+  }
+});
+
+// Close modals when clicking outside
+document.getElementById('board-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeBoardModal();
+  }
+});
+
+document.getElementById('delete-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeDeleteModal();
+  }
+});
+
+// Form submission debugging
+document.getElementById('board-form').addEventListener('submit', function(e) {
+  console.log('=== BOARD FORM SUBMIT DEBUG ===');
+  const formData = new FormData(this);
+  for (let [key, value] of formData.entries()) {
+    console.log(`${key}: ${value}`);
+  }
+  console.log('Form action:', this.action);
+  console.log('Form method:', this.method);
+  console.log('=== END DEBUG ===');
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+  // Escape to close modals
+  if (e.key === 'Escape') {
+    closeBoardModal();
+    closeDeleteModal();
+  }
+
+  // Ctrl+N for new board
+  if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+    e.preventDefault();
+    showCreateBoardModal();
+  }
+});
+</script>
+{% endblock %}

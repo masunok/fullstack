@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<main class="container mx-auto px-4 py-8">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb mb-6">
+    <div class="text-sm text-gray-500">
+      <a href="/" class="hover:text-blue-600">홈</a>
+      <span class="mx-2">></span>
+      <a href="/boards" class="hover:text-blue-600">게시판</a>
+      <span class="mx-2">></span>
+      <a href="/boards/{slug}" class="hover:text-blue-600">{board_name}</a>
+      <span class="mx-2">></span>
+      <span class="text-gray-800">{mode === 'edit' ? '글 수정' : '글 쓰기'}</span>
+    </div>
+  </nav>
+  
+  <!-- Page Header -->
+  <div class="page-header mb-8">
+    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
+      {mode === 'edit' ? '글 수정' : '글 쓰기'}
+    </h1>
+    <p class="text-gray-600 mt-2">{board_name} 게시판</p>
+  </div>
+  
+  <!-- Post Form -->
+  <div class="post-form-container bg-white rounded-lg shadow border">
+    <form 
+      action="{mode === 'edit' ? `/posts/${post_id}` : `/boards/${board_slug}/posts`}" 
+      method="POST" 
+      class="post-form p-6"
+    >
+      <!-- CSRF Token -->
+      <input type="hidden" name="csrf_token" value="{csrf_token}"/>
+      {mode === 'edit' && '<input type="hidden" name="_method" value="PUT"/>'}
+      
+      <!-- Title -->
+      <div class="form-group mb-6">
+        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+          제목 <span class="text-red-500">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="title" 
+          name="title" 
+          value="{post_title || ''}"
+          class="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="제목을 입력하세요"
+          required
+          maxlength="200"
+        />
+        <div class="text-xs text-gray-500 mt-1">최대 200자</div>
+        <div class="error-message text-red-500 text-xs mt-1 hidden" id="title-error"></div>
+      </div>
+      
+      <!-- Content -->
+      <div class="form-group mb-6">
+        <label for="content" class="block text-sm font-medium text-gray-700 mb-2">
+          내용 <span class="text-red-500">*</span>
+        </label>
+        
+        <!-- Editor Toolbar -->
+        <div class="editor-toolbar border border-gray-300 rounded-t-md bg-gray-50 p-2">
+          <div class="flex flex-wrap gap-1">
+            <button type="button" class="toolbar-btn p-2 hover:bg-gray-200 rounded" data-action="bold">
+              <strong>B</strong>
+            </button>
+            <button type="button" class="toolbar-btn p-2 hover:bg-gray-200 rounded" data-action="italic">
+              <em>I</em>
+            </button>
+            <button type="button" class="toolbar-btn p-2 hover:bg-gray-200 rounded" data-action="underline">
+              <u>U</u>
+            </button>
+            <div class="border-l border-gray-300 mx-1"></div>
+            <button type="button" class="toolbar-btn p-2 hover:bg-gray-200 rounded" data-action="header">
+              H1
+            </button>
+            <button type="button" class="toolbar-btn p-2 hover:bg-gray-200 rounded" data-action="list">
+              List
+            </button>
+            <button type="button" class="toolbar-btn p-2 hover:bg-gray-200 rounded" data-action="link">
+              Link
+            </button>
+          </div>
+        </div>
+        
+        <!-- Content Editor -->
+        <div class="editor-container">
+          <div 
+            id="content-editor" 
+            class="content-editor border border-t-0 border-gray-300 rounded-b-md p-4 min-h-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            contenteditable="true"
+            data-placeholder="내용을 입력하세요..."
+          >
+            {post_content || ''}
+          </div>
+          
+          <!-- Hidden textarea for form submission -->
+          <textarea 
+            id="content" 
+            name="content" 
+            class="hidden"
+            required
+          >{post_content || ''}</textarea>
+        </div>
+        
+        <div class="editor-help text-xs text-gray-500 mt-2">
+          <div class="mb-1">• 기본적인 서식 지원 (굵게, 기울임, 밑줄, 제목, 목록, 링크)</div>
+          <div>• 이미지 업로드는 지원되지 않습니다</div>
+        </div>
+        
+        <div class="error-message text-red-500 text-xs mt-1 hidden" id="content-error"></div>
+      </div>
+      
+      <!-- Form Actions -->
+      <div class="form-actions flex flex-col sm:flex-row gap-3 sm:justify-end">
+        <a 
+          href="{mode === 'edit' ? `/posts/${post_id}` : `/boards/${board_slug}`}" 
+          class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-center"
+        >
+          취소
+        </a>
+        
+        <button 
+          type="button" 
+          class="preview-btn px-6 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50"
+        >
+          미리보기
+        </button>
+        
+        <button 
+          type="submit" 
+          class="submit-btn px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          {mode === 'edit' ? '수정완료' : '작성완료'}
+        </button>
+      </div>
+      
+      <!-- General Error Message -->
+      <div class="error-message text-red-500 text-sm mt-4 hidden" id="general-error"></div>
+    </form>
+  </div>
+  
+  <!-- Preview Modal -->
+  <div class="preview-modal fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="modal-content bg-white rounded-lg mx-4 my-8 max-w-4xl mx-auto h-5/6 overflow-hidden">
+      <div class="modal-header flex items-center justify-between p-6 border-b">
+        <h3 class="text-lg font-semibold">미리보기</h3>
+        <button class="close-preview text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+      </div>
+      
+      <div class="modal-body p-6 overflow-y-auto">
+        <div class="preview-title text-2xl font-bold mb-4"></div>
+        <div class="preview-content prose max-w-none"></div>
+      </div>
+      
+      <div class="modal-footer flex justify-end p-6 border-t">
+        <button class="close-preview px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+</main>

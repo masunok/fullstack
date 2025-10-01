@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+
+{% block title %}회원가입 - AIZEVA{% endblock %}
+
+{% block content %}
+<main class="container mx-auto px-4 py-8">
+  <div class="max-w-md mx-auto">
+    <div class="bg-white p-8 rounded-lg shadow-lg border">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">회원가입</h1>
+        <p class="text-gray-600">새로운 계정을 만드세요</p>
+      </div>
+
+      <!-- Flash Messages (FastAPI compatible) -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="mb-4 p-3 rounded-md {% if message.category == 'error' %}bg-red-50 border border-red-200 text-red-700{% else %}bg-green-50 border border-green-200 text-green-700{% endif %}">
+            {{ message.content }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Signup Form -->
+      <form class="signup-form" action="/auth/signup" method="POST" novalidate>
+        <!-- CSRF Token -->
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+
+        <!-- Email -->
+        <div class="form-group mb-4">
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+            이메일 <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value=""
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            placeholder="이메일을 입력하세요"
+            required
+            autocomplete="email"
+          />
+          <div class="help-text text-gray-500 text-xs mt-1">로그인 시 사용할 이메일 주소</div>
+          {% if errors and errors.email %}
+            <div class="error-message text-red-500 text-xs mt-1">{{ errors.email }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Username -->
+        <div class="form-group mb-4">
+          <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+            사용자명 <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            value=""
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            placeholder="사용자명을 입력하세요"
+            required
+            autocomplete="username"
+            pattern="^[a-zA-Z0-9_]+$"
+            minlength="3"
+            maxlength="50"
+          />
+          <div class="help-text text-gray-500 text-xs mt-1">영문, 숫자, 언더스코어 사용 가능 (3-50자)</div>
+          {% if errors and errors.username %}
+            <div class="error-message text-red-500 text-xs mt-1">{{ errors.username }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Display Name -->
+        <div class="form-group mb-4">
+          <label for="display_name" class="block text-sm font-medium text-gray-700 mb-2">
+            표시 이름 <span class="text-gray-400">(선택사항)</span>
+          </label>
+          <input
+            type="text"
+            id="display_name"
+            name="display_name"
+            value=""
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            placeholder="표시할 이름을 입력하세요"
+            autocomplete="name"
+            maxlength="100"
+          />
+          <div class="help-text text-gray-500 text-xs mt-1">다른 사용자에게 표시될 이름 (비워두면 사용자명 사용)</div>
+          {% if errors and errors.display_name %}
+            <div class="error-message text-red-500 text-xs mt-1">{{ errors.display_name }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Password -->
+        <div class="form-group mb-4">
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+            비밀번호 <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              placeholder="비밀번호를 입력하세요"
+              required
+              autocomplete="new-password"
+              minlength="10"
+            />
+            <button
+              type="button"
+              class="absolute inset-y-0 right-0 px-3 py-2 text-gray-400 hover:text-gray-600"
+              onclick="togglePassword('password')"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="help-text text-gray-500 text-xs mt-1">영문자, 숫자, 특수문자 포함 10자리 이상</div>
+          <!-- Password strength indicator -->
+          <div class="password-strength mt-2 hidden">
+            <div class="text-xs text-gray-600 mb-1">비밀번호 강도:</div>
+            <div class="flex space-x-1">
+              <div class="strength-bar h-1 bg-gray-200 rounded flex-1"></div>
+              <div class="strength-bar h-1 bg-gray-200 rounded flex-1"></div>
+              <div class="strength-bar h-1 bg-gray-200 rounded flex-1"></div>
+              <div class="strength-bar h-1 bg-gray-200 rounded flex-1"></div>
+            </div>
+            <div class="strength-text text-xs mt-1"></div>
+          </div>
+          {% if errors and errors.password %}
+            <div class="error-message text-red-500 text-xs mt-1">{{ errors.password }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Password Confirm -->
+        <div class="form-group mb-6">
+          <label for="password_confirm" class="block text-sm font-medium text-gray-700 mb-2">
+            비밀번호 확인 <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <input
+              type="password"
+              id="password_confirm"
+              name="password_confirm"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              placeholder="비밀번호를 다시 입력하세요"
+              required
+              autocomplete="new-password"
+            />
+            <button
+              type="button"
+              class="absolute inset-y-0 right-0 px-3 py-2 text-gray-400 hover:text-gray-600"
+              onclick="togglePassword('password_confirm')"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </button>
+          </div>
+          {% if errors and errors.password_confirm %}
+            <div class="error-message text-red-500 text-xs mt-1">{{ errors.password_confirm }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Terms Agreement -->
+        <div class="form-group mb-6">
+          <label class="flex items-start">
+            <input
+              type="checkbox"
+              name="agree_terms"
+              required
+              class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
+            />
+            <span class="text-sm text-gray-700">
+              <a href="#" class="text-blue-600 hover:text-blue-800">이용약관</a> 및
+              <a href="#" class="text-blue-600 hover:text-blue-800">개인정보처리방침</a>에 동의합니다
+              <span class="text-red-500">*</span>
+            </span>
+          </label>
+          {% if errors and errors.agree_terms %}
+            <div class="error-message text-red-500 text-xs mt-1">{{ errors.agree_terms }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          id="signup-btn"
+        >
+          <span class="loading-text">회원가입</span>
+          <span class="loading-spinner hidden">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            회원가입 중...
+          </span>
+        </button>
+
+      </form>
+
+      <!-- Footer Links -->
+      <div class="text-center mt-6 space-y-2">
+        <p class="text-sm text-gray-600">
+          이미 계정이 있으신가요?
+          <a href="/auth/login" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">로그인</a>
+        </p>
+        <p class="text-xs text-gray-500">
+          <a href="/" class="hover:text-gray-700 transition-colors">메인으로 돌아가기</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Error Modal -->
+<div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50" onclick="closeErrorModal(event)">
+  <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl" onclick="event.stopPropagation()">
+    <div class="flex items-center mb-4">
+      <div class="flex-shrink-0">
+        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-lg font-medium text-gray-900">회원가입 오류</h3>
+      </div>
+    </div>
+    <div class="mb-6">
+      <p id="errorMessage" class="text-sm text-gray-700"></p>
+    </div>
+    <div class="flex justify-end">
+      <button
+        type="button"
+        onclick="closeErrorModal()"
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+      >
+        확인
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Form submission handling with error popup
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.querySelector('.signup-form');
+  const submitBtn = document.getElementById('signup-btn');
+  const loadingText = submitBtn.querySelector('.loading-text');
+  const loadingSpinner = submitBtn.querySelector('.loading-spinner');
+
+  if (form && submitBtn) {
+    form.addEventListener('submit', async function(event) {
+      event.preventDefault(); // 기본 폼 제출을 막고 fetch로 처리
+
+      // 버튼 상태 변경 (로딩)
+      submitBtn.disabled = true;
+      loadingText.classList.add('hidden');
+      loadingSpinner.classList.remove('hidden');
+
+      try {
+        // 폼 데이터 수집
+        const formData = new FormData(form);
+
+        // fetch로 회원가입 요청
+        const response = await fetch('/auth/signup', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          // 성공 시 로그인 페이지로 리다이렉트
+          window.location.href = '/auth/login?message=회원가입이 완료되었습니다.';
+        } else {
+          // 에러 응답 처리
+          const errorData = await response.json();
+          let errorMessage = '회원가입 중 오류가 발생했습니다.';
+
+          if (errorData.detail) {
+            errorMessage = errorData.detail;
+          }
+
+          // 에러 팝업 표시
+          showErrorModal(errorMessage);
+        }
+      } catch (error) {
+        console.error('회원가입 요청 중 오류:', error);
+        showErrorModal('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      } finally {
+        // 버튼 상태 복원
+        submitBtn.disabled = false;
+        loadingText.classList.remove('hidden');
+        loadingSpinner.classList.add('hidden');
+      }
+    });
+  }
+});
+
+// Error modal functions
+function showErrorModal(message) {
+  const modal = document.getElementById('errorModal');
+  const messageElement = document.getElementById('errorMessage');
+
+  messageElement.textContent = message;
+  modal.classList.remove('hidden');
+
+  // 모달 표시 시 포커스 이동 (접근성)
+  const confirmBtn = modal.querySelector('button');
+  if (confirmBtn) {
+    confirmBtn.focus();
+  }
+}
+
+function closeErrorModal(event) {
+  const modal = document.getElementById('errorModal');
+
+  // 이벤트가 있고 클릭된 대상이 모달 내부 요소가 아닌 경우에만 닫기
+  if (event && event.target !== modal) {
+    return;
+  }
+
+  modal.classList.add('hidden');
+}
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    const modal = document.getElementById('errorModal');
+    if (!modal.classList.contains('hidden')) {
+      closeErrorModal();
+    }
+  }
+});
+
+// Password visibility toggle
+function togglePassword(inputId) {
+  const input = document.getElementById(inputId);
+  const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+  input.setAttribute('type', type);
+}
+
+// Password strength checker
+document.addEventListener('DOMContentLoaded', function() {
+  const passwordInput = document.getElementById('password');
+  const passwordConfirmInput = document.getElementById('password_confirm');
+  const strengthIndicator = document.querySelector('.password-strength');
+  const strengthBars = document.querySelectorAll('.strength-bar');
+  const strengthText = document.querySelector('.strength-text');
+
+  if (passwordInput && strengthIndicator) {
+    passwordInput.addEventListener('input', function() {
+      const password = this.value;
+      if (password.length > 0) {
+        strengthIndicator.classList.remove('hidden');
+        const strength = calculatePasswordStrength(password);
+        updateStrengthIndicator(strength);
+      } else {
+        strengthIndicator.classList.add('hidden');
+      }
+    });
+  }
+
+  // Password confirmation matching
+  if (passwordConfirmInput) {
+    passwordConfirmInput.addEventListener('input', function() {
+      const password = passwordInput.value;
+      const confirmPassword = this.value;
+
+      const errorDiv = this.parentNode.parentNode.querySelector('.error-message');
+      if (errorDiv) {
+        errorDiv.remove();
+      }
+
+      if (confirmPassword && password !== confirmPassword) {
+        const error = document.createElement('div');
+        error.className = 'error-message text-red-500 text-xs mt-1';
+        error.textContent = '비밀번호가 일치하지 않습니다.';
+        this.parentNode.parentNode.appendChild(error);
+        this.classList.add('border-red-500');
+      } else {
+        this.classList.remove('border-red-500');
+      }
+    });
+  }
+
+  function calculatePasswordStrength(password) {
+    let score = 0;
+
+    // Length check
+    if (password.length >= 8) score += 1;
+    if (password.length >= 10) score += 1;
+
+    // Character variety
+    if (/[a-z]/.test(password)) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+    return Math.min(score, 4);
+  }
+
+  function updateStrengthIndicator(strength) {
+    const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500'];
+    const texts = ['매우 약함', '약함', '보통', '강함'];
+
+    strengthBars.forEach((bar, index) => {
+      bar.className = 'strength-bar h-1 rounded flex-1';
+      if (index < strength) {
+        bar.classList.add(colors[strength - 1]);
+      } else {
+        bar.classList.add('bg-gray-200');
+      }
+    });
+
+    if (strength > 0) {
+      strengthText.textContent = texts[strength - 1];
+      strengthText.className = `strength-text text-xs mt-1 ${colors[strength - 1].replace('bg-', 'text-')}`;
+    }
+  }
+
+  // Real-time validation
+  const emailInput = document.getElementById('email');
+  const usernameInput = document.getElementById('username');
+
+  // Email validation
+  if (emailInput) {
+    emailInput.addEventListener('blur', function() {
+      const email = this.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      const errorDiv = this.parentNode.querySelector('.error-message');
+      if (errorDiv) {
+        errorDiv.remove();
+      }
+
+      if (email && !emailRegex.test(email)) {
+        const error = document.createElement('div');
+        error.className = 'error-message text-red-500 text-xs mt-1';
+        error.textContent = '올바른 이메일 형식을 입력해주세요.';
+        this.parentNode.appendChild(error);
+        this.classList.add('border-red-500');
+      } else {
+        this.classList.remove('border-red-500');
+      }
+    });
+  }
+
+  // Username validation
+  if (usernameInput) {
+    usernameInput.addEventListener('blur', function() {
+      const username = this.value.trim();
+      const usernameRegex = /^[a-zA-Z0-9_]+$/;
+
+      const errorDiv = this.parentNode.querySelector('.error-message');
+      if (errorDiv) {
+        errorDiv.remove();
+      }
+
+      if (username && (!usernameRegex.test(username) || username.length < 3)) {
+        const error = document.createElement('div');
+        error.className = 'error-message text-red-500 text-xs mt-1';
+        error.textContent = '사용자명은 영문, 숫자, 언더스코어만 사용 가능하며 3자 이상이어야 합니다.';
+        this.parentNode.appendChild(error);
+        this.classList.add('border-red-500');
+      } else {
+        this.classList.remove('border-red-500');
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

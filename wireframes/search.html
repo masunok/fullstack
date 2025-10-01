@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}검색 결과 - AIZEVA{% endblock %}
+
+{% block content %}
+<main class="container mx-auto px-4 py-8">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb mb-6">
+    <div class="text-sm text-gray-500">
+      <a href="/" class="hover:text-blue-600 transition-colors">홈</a>
+      <span class="mx-2">></span>
+      <span class="text-gray-800">검색 결과</span>
+    </div>
+  </nav>
+
+  <!-- Search Header -->
+  <div class="search-header mb-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4">검색 결과</h1>
+
+    <!-- Search Form -->
+    <div class="search-form bg-white rounded-lg shadow-sm border p-6 mb-6">
+      <form method="GET" action="/search" class="space-y-4">
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex-1">
+            <label for="query" class="block text-sm font-medium text-gray-700 mb-2">검색어</label>
+            <input
+              type="text"
+              id="query"
+              name="q"
+              value="{{ query }}"
+              placeholder="제목 및 내용에서 검색..."
+              class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+          </div>
+
+          <div class="md:w-48">
+            <label for="board" class="block text-sm font-medium text-gray-700 mb-2">게시판</label>
+            <select
+              id="board"
+              name="board"
+              class="form-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">전체게시판</option>
+              <option value="notice,newsletter" {% if board == "notice,newsletter" %}selected{% endif %}>
+                공지사항&뉴스레터
+              </option>
+              <option value="free" {% if board == "free" %}selected{% endif %}>
+                자유게시판
+              </option>
+            </select>
+          </div>
+
+          <div class="md:w-24 md:self-end">
+            <button
+              type="submit"
+              class="btn-primary w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            >
+              검색
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Search Results Info -->
+    {% if search_results %}
+    <div class="search-info mb-6">
+      <p class="text-gray-600">
+        {% if query %}
+        <span class="font-medium">"{{ query }}"</span>에 대한 검색 결과
+        {% else %}
+        전체 게시글
+        {% endif %}
+        {% if board %}
+        in <span class="font-medium">{{ board }}</span> 게시판
+        {% endif %}
+        - 총 <span class="font-medium text-blue-600">{{ search_results.total_count }}</span>개의 게시글
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Search Results -->
+  {% if search_results %}
+    {% if search_results.posts %}
+    <div class="search-results">
+      <div class="space-y-4">
+        {% for post in search_results.posts %}
+        <article class="post-card bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+          <div class="p-6">
+            <!-- Post Header -->
+            <div class="post-header mb-3">
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <h2 class="post-title">
+                    <a
+                      href="/posts/{{ post.id }}"
+                      class="text-lg font-semibold text-gray-800 hover:text-blue-600 transition-colors line-clamp-2"
+                    >
+                      {{ post.title }}
+                    </a>
+                  </h2>
+
+                  <div class="post-meta mt-2 flex items-center gap-3 text-sm text-gray-500">
+                    <span class="board-name">
+                      <a href="/boards/{{ post.boards.slug }}" class="text-blue-600 hover:underline">
+                        {{ post.boards.name }}
+                      </a>
+                    </span>
+                    <span>{{ post.users.display_name }}</span>
+                    <span>{{ post.created_at[:16] if post.created_at is string else post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    <span>조회 {{ post.view_count }}</span>
+                  </div>
+                </div>
+
+                <div class="post-stats flex items-center gap-2 text-sm text-gray-500 ml-4">
+                  <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <span>{{ post.comment_count or 0 }}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Post Excerpt -->
+            <div class="post-excerpt">
+              <p class="text-gray-600 line-clamp-3">
+                {{ post.content | striptags | truncate(200) }}
+              </p>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if search_results.total_pages > 1 %}
+      <nav class="pagination mt-8" aria-label="검색 결과 페이지네이션">
+        <div class="flex justify-center items-center space-x-1">
+          <!-- First Page -->
+          {% if search_results.page > 1 %}
+          <a
+            href="/search?q={{ query }}&board={{ board }}&page=1"
+            class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+            aria-label="첫 페이지"
+          >
+            처음
+          </a>
+          {% endif %}
+
+          <!-- Previous Page -->
+          {% if search_results.page > 1 %}
+          <a
+            href="/search?q={{ query }}&board={{ board }}&page={{ search_results.page - 1 }}"
+            class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+            aria-label="이전 페이지"
+          >
+            이전
+          </a>
+          {% endif %}
+
+          <!-- Page Numbers -->
+          {% for p in range(max(1, search_results.page - 2), min(search_results.total_pages + 1, search_results.page + 3)) %}
+            {% if p == search_results.page %}
+            <span class="px-3 py-2 text-sm bg-blue-600 text-white rounded" aria-current="page">
+              {{ p }}
+            </span>
+            {% else %}
+            <a
+              href="/search?q={{ query }}&board={{ board }}&page={{ p }}"
+              class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+              aria-label="{{ p }}페이지"
+            >
+              {{ p }}
+            </a>
+            {% endif %}
+          {% endfor %}
+
+          <!-- Next Page -->
+          {% if search_results.page < search_results.total_pages %}
+          <a
+            href="/search?q={{ query }}&board={{ board }}&page={{ search_results.page + 1 }}"
+            class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+            aria-label="다음 페이지"
+          >
+            다음
+          </a>
+          {% endif %}
+
+          <!-- Last Page -->
+          {% if search_results.page < search_results.total_pages %}
+          <a
+            href="/search?q={{ query }}&board={{ board }}&page={{ search_results.total_pages }}"
+            class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+            aria-label="마지막 페이지"
+          >
+            끝
+          </a>
+          {% endif %}
+        </div>
+      </nav>
+      {% endif %}
+    </div>
+    {% else %}
+    <!-- No Results -->
+    <div class="no-results text-center py-12">
+      <div class="max-w-md mx-auto">
+        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-800 mb-2">검색 결과가 없습니다</h3>
+        <p class="text-gray-600 mb-4">다른 검색어를 시도해보세요.</p>
+        <div class="space-y-2 text-sm text-gray-500">
+          <p>• 검색어의 철자를 확인해보세요</p>
+          <p>• 다른 키워드로 검색해보세요</p>
+          <p>• 전체 게시판에서 검색해보세요</p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  {% else %}
+  <!-- Search Help -->
+  <div class="search-help text-center py-12">
+    <div class="max-w-md mx-auto">
+      <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+      <h3 class="text-lg font-medium text-gray-800 mb-2">게시글 검색</h3>
+      <p class="text-gray-600 mb-4">원하는 게시글을 빠르게 찾아보세요.</p>
+      <div class="space-y-2 text-sm text-gray-500">
+        <p>• 제목과 내용에서 검색됩니다</p>
+        <p>• 특정 게시판만 검색할 수 있습니다</p>
+        <p>• 여러 키워드를 사용할 수 있습니다</p>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</main>
+{% endblock %}

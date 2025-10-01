@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<main class="container mx-auto px-4 py-8">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb mb-6">
+    <div class="text-sm text-gray-500">
+      <a href="/" class="hover:text-blue-600">홈</a>
+      <span class="mx-2">></span>
+      <a href="/boards" class="hover:text-blue-600">게시판</a>
+      <span class="mx-2">></span>
+      <span class="text-gray-800">{board_name}</span>
+    </div>
+  </nav>
+  
+  <!-- Board Header -->
+  <div class="board-header mb-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div class="board-info mb-4 md:mb-0">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">{board_name}</h1>
+        <p class="text-gray-600">{board_description}</p>
+        <div class="board-meta mt-2 text-sm text-gray-500">
+          <span>게시글 {total_posts}개</span>
+          <span class="mx-2">·</span>
+          <span>페이지 {current_page}/{total_pages}</span>
+        </div>
+      </div>
+      
+      <!-- Actions -->
+      <div class="board-actions">
+        <div class="flex gap-2">
+          <!-- Search -->
+          <div class="search-box">
+            <input 
+              type="text" 
+              placeholder="게시글 검색..." 
+              class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button class="ml-2 px-3 py-2 bg-gray-600 text-white rounded-md text-sm hover:bg-gray-700">
+              검색
+            </button>
+          </div>
+          
+          <!-- Write Post Button (if allowed) -->
+          <a 
+            href="/boards/{slug}/write" 
+            class="write-btn px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+          >
+            글쓰기
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Posts List -->
+  <div class="posts-list bg-white rounded-lg shadow border">
+    <!-- List Header (Desktop) -->
+    <div class="list-header hidden md:flex bg-gray-50 border-b p-4 text-sm font-medium text-gray-700">
+      <div class="flex-1">제목</div>
+      <div class="w-24 text-center">작성자</div>
+      <div class="w-20 text-center">조회</div>
+      <div class="w-24 text-center">작성일</div>
+    </div>
+    
+    <!-- Post Items -->
+    <div class="post-items">
+      <!-- Post Item -->
+      <div class="post-item border-b last:border-b-0 p-4 hover:bg-gray-50">
+        <!-- Desktop Layout -->
+        <div class="hidden md:flex items-center">
+          <div class="post-title flex-1">
+            <a href="/posts/{post_id}" class="text-gray-800 hover:text-blue-600 font-medium">
+              {post_title}
+            </a>
+            <span class="comment-count text-blue-600 ml-2 text-sm">[{comment_count}]</span>
+          </div>
+          <div class="post-author w-24 text-center text-sm text-gray-600">{author}</div>
+          <div class="post-views w-20 text-center text-sm text-gray-500">{view_count}</div>
+          <div class="post-date w-24 text-center text-sm text-gray-500">{created_at}</div>
+        </div>
+        
+        <!-- Mobile Layout -->
+        <div class="md:hidden">
+          <div class="post-title mb-2">
+            <a href="/posts/{post_id}" class="text-gray-800 hover:text-blue-600 font-medium">
+              {post_title}
+            </a>
+            <span class="comment-count text-blue-600 ml-2 text-sm">[{comment_count}]</span>
+          </div>
+          <div class="post-meta text-xs text-gray-500">
+            <span>{author}</span>
+            <span class="mx-2">·</span>
+            <span>{created_at}</span>
+            <span class="mx-2">·</span>
+            <span>조회 {view_count}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- More post items... -->
+    </div>
+    
+    <!-- Empty State -->
+    <div class="empty-state text-center py-12 hidden">
+      <div class="text-gray-400 text-6xl mb-4">📄</div>
+      <h3 class="text-lg font-medium text-gray-700 mb-2">아직 게시글이 없습니다</h3>
+      <p class="text-gray-500 mb-4">첫 번째 게시글을 작성해보세요</p>
+      <a 
+        href="/boards/{slug}/write" 
+        class="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+      >
+        글쓰기
+      </a>
+    </div>
+  </div>
+  
+  <!-- Pagination -->
+  <div class="pagination mt-8">
+    <div class="flex justify-center">
+      <nav class="pagination-nav flex items-center space-x-2">
+        <!-- First Page -->
+        <a 
+          href="/boards/{slug}?page=1" 
+          class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          처음
+        </a>
+        
+        <!-- Previous -->
+        <a 
+          href="/boards/{slug}?page={prev_page}" 
+          class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          이전
+        </a>
+        
+        <!-- Page Numbers -->
+        <a 
+          href="/boards/{slug}?page=1" 
+          class="px-3 py-2 text-sm text-white bg-blue-600 border border-blue-600 rounded-md"
+        >
+          1
+        </a>
+        <a 
+          href="/boards/{slug}?page=2" 
+          class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          2
+        </a>
+        <a 
+          href="/boards/{slug}?page=3" 
+          class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          3
+        </a>
+        
+        <!-- Next -->
+        <a 
+          href="/boards/{slug}?page={next_page}" 
+          class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          다음
+        </a>
+        
+        <!-- Last Page -->
+        <a 
+          href="/boards/{slug}?page={last_page}" 
+          class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          끝
+        </a>
+      </nav>
+    </div>
+  </div>
+</main>

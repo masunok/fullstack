@@ -1,0 +1,59 @@
+/* Custom CSS for AIZEVA */
+
+/* Quill editor customization */
+.ql-editor {
+    min-height: 200px;
+}
+
+/* HTMX loading indicators */
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 500ms ease-in;
+}
+
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}
+
+/* Custom button styles */
+.btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200;
+}
+
+.btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition duration-200;
+}
+
+/* Form styles */
+.form-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.form-error {
+    @apply text-red-600 text-sm mt-1;
+}
+
+/* 게시글 내용의 줄바꿈 처리 */
+.post-body .prose {
+    white-space: pre-line !important;
+}
+
+/* 게시글 내용 모든 요소에 줄바꿈 적용 */
+.post-content,
+.post-body .prose,
+.post-body .prose p,
+.post-body .prose div {
+    white-space: pre-line !important;
+}
+
+/* Quill 에디터 내용의 줄바꿈 처리 */
+.ql-editor p {
+    white-space: pre-line !important;
+    margin-bottom: 1em;
+}
+
+/* 댓글 및 답글 내용의 줄바꿈 처리 */
+.comment-content,
+.reply-content {
+    white-space: pre-line !important;
+}

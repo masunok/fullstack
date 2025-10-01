@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<main class="container mx-auto px-4 py-8">
+  <!-- Hero Section -->
+  <section class="hero mb-12">
+    <div class="text-center">
+      <h1 class="text-4xl font-bold text-gray-800 mb-4">AIZEVA 커뮤니티</h1>
+      <p class="text-lg text-gray-600 mb-8">다양한 주제로 소통하는 커뮤니티 공간입니다</p>
+      <div class="cta-buttons">
+        <a href="/boards" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg mr-4 hover:bg-blue-700">게시판 둘러보기</a>
+        <a href="/signup" class="inline-block px-6 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">회원가입</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Popular Boards -->
+  <section class="popular-boards mb-12">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">인기 게시판</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="board-card bg-white p-6 rounded-lg shadow border">
+        <h3 class="text-lg font-semibold mb-2">공지사항</h3>
+        <p class="text-gray-600 text-sm mb-4">중요한 공지사항을 확인하세요</p>
+        <div class="stats text-xs text-gray-500">
+          <span>게시글 {post_count}개</span>
+        </div>
+      </div>
+      
+      <div class="board-card bg-white p-6 rounded-lg shadow border">
+        <h3 class="text-lg font-semibold mb-2">뉴스레터</h3>
+        <p class="text-gray-600 text-sm mb-4">최신 소식과 업데이트</p>
+        <div class="stats text-xs text-gray-500">
+          <span>게시글 {post_count}개</span>
+        </div>
+      </div>
+      
+      <div class="board-card bg-white p-6 rounded-lg shadow border">
+        <h3 class="text-lg font-semibold mb-2">자유게시판</h3>
+        <p class="text-gray-600 text-sm mb-4">자유롭게 이야기해보세요</p>
+        <div class="stats text-xs text-gray-500">
+          <span>게시글 {post_count}개</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Latest Posts -->
+  <section class="latest-posts">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">최신 게시글</h2>
+    <div class="bg-white rounded-lg shadow border">
+      <div class="post-list">
+        <!-- Post Item -->
+        <div class="post-item border-b last:border-b-0 p-4 hover:bg-gray-50">
+          <div class="flex items-center justify-between">
+            <div class="post-content flex-1">
+              <div class="post-meta text-xs text-gray-500 mb-1">
+                <span class="board-name">[{board_name}]</span>
+                <span class="author ml-2">{author}</span>
+                <span class="date ml-2">{created_at}</span>
+              </div>
+              <h3 class="post-title text-lg font-medium text-gray-800 hover:text-blue-600">
+                <a href="/posts/{post_id}">{title}</a>
+              </h3>
+              <p class="post-preview text-sm text-gray-600 mt-1 truncate">{content_preview}</p>
+            </div>
+            <div class="post-stats text-xs text-gray-500 ml-4">
+              <div class="view-count">조회 {view_count}</div>
+              <div class="comment-count">댓글 {comment_count}</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Repeat for more posts -->
+        <div class="post-item border-b last:border-b-0 p-4 hover:bg-gray-50">
+          <div class="text-center py-4">
+            <a href="/boards" class="text-blue-600 hover:text-blue-800">모든 게시글 보기 →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>

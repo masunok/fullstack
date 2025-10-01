@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<main class="container mx-auto px-4 py-8">
+  <!-- Admin Header -->
+  <div class="admin-header mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">사용자 관리</h1>
+        <p class="text-gray-600">AIZEVA 사용자들을 관리합니다</p>
+      </div>
+      
+      <!-- Admin Navigation -->
+      <div class="admin-nav">
+        <nav class="flex space-x-4">
+          <a 
+            href="/admin/users" 
+            class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm"
+          >
+            사용자 관리
+          </a>
+          <a 
+            href="/admin/boards" 
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm"
+          >
+            게시판 관리
+          </a>
+        </nav>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Filters and Search -->
+  <div class="filters-section bg-white p-6 rounded-lg shadow border mb-6">
+    <div class="flex flex-col md:flex-row gap-4">
+      <!-- Search -->
+      <div class="search-box flex-1">
+        <div class="flex">
+          <select class="border border-gray-300 rounded-l-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="all">전체</option>
+            <option value="username">사용자명</option>
+            <option value="email">이메일</option>
+            <option value="display_name">표시이름</option>
+          </select>
+          <input 
+            type="text" 
+            placeholder="검색어를 입력하세요" 
+            class="flex-1 border-t border-b border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 text-sm">
+            검색
+          </button>
+        </div>
+      </div>
+      
+      <!-- Role Filter -->
+      <div class="role-filter">
+        <select class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="all">모든 권한</option>
+          <option value="admin">관리자</option>
+          <option value="user">일반사용자</option>
+        </select>
+      </div>
+      
+      <!-- Date Filter -->
+      <div class="date-filter">
+        <select class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="all">전체기간</option>
+          <option value="today">오늘</option>
+          <option value="week">최근 1주</option>
+          <option value="month">최근 1개월</option>
+          <option value="year">최근 1년</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Users Table -->
+  <div class="users-table bg-white rounded-lg shadow border">
+    <!-- Table Header -->
+    <div class="table-header p-6 border-b">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-800">
+          사용자 목록 <span class="text-blue-600">({total_users}명)</span>
+        </h3>
+        
+        <div class="table-actions">
+          <button class="px-3 py-1 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50">
+            엑셀 다운로드
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Desktop Table -->
+    <div class="hidden lg:block">
+      <table class="w-full">
+        <thead class="bg-gray-50">
+          <tr class="text-left text-sm font-medium text-gray-700">
+            <th class="p-4">
+              <input type="checkbox" class="select-all-checkbox"/>
+            </th>
+            <th class="p-4">사용자 정보</th>
+            <th class="p-4">권한</th>
+            <th class="p-4">가입일</th>
+            <th class="p-4">마지막 로그인</th>
+            <th class="p-4">게시글/댓글</th>
+            <th class="p-4">상태</th>
+            <th class="p-4">관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- User Row -->
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-4">
+              <input type="checkbox" class="user-checkbox" value="{user_id}"/>
+            </td>
+            
+            <td class="p-4">
+              <div class="user-info">
+                <div class="font-medium text-gray-800">{display_name || username}</div>
+                <div class="text-sm text-gray-500">{email}</div>
+                <div class="text-xs text-gray-400">@{username}</div>
+              </div>
+            </td>
+            
+            <td class="p-4">
+              <span class="inline-block px-2 py-1 text-xs rounded-full {is_admin ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                {is_admin ? '관리자' : '일반사용자'}
+              </span>
+            </td>
+            
+            <td class="p-4 text-sm text-gray-600">{created_at}</td>
+            <td class="p-4 text-sm text-gray-600">{last_login_at || '없음'}</td>
+            
+            <td class="p-4 text-sm text-gray-600">
+              <div>{post_count}개 / {comment_count}개</div>
+            </td>
+            
+            <td class="p-4">
+              <span class="inline-block px-2 py-1 text-xs rounded-full {is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                {is_active ? '활성' : '비활성'}
+              </span>
+            </td>
+            
+            <td class="p-4">
+              <div class="flex space-x-2">
+                <button 
+                  class="text-blue-600 hover:text-blue-800 text-sm"
+                  data-action="toggle-admin" 
+                  data-user-id="{user_id}"
+                >
+                  {is_admin ? '일반화' : '관리자화'}
+                </button>
+                <button 
+                  class="text-red-600 hover:text-red-800 text-sm"
+                  data-action="toggle-status" 
+                  data-user-id="{user_id}"
+                >
+                  {is_active ? '비활성화' : '활성화'}
+                </button>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- More user rows... -->
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Mobile Cards -->
+    <div class="lg:hidden">
+      <div class="user-cards p-4 space-y-4">
+        <!-- User Card -->
+        <div class="user-card bg-gray-50 p-4 rounded-lg">
+          <div class="flex items-start justify-between mb-3">
+            <div class="user-info">
+              <div class="font-medium text-gray-800">{display_name || username}</div>
+              <div class="text-sm text-gray-500">{email}</div>
+              <div class="text-xs text-gray-400">@{username}</div>
+            </div>
+            
+            <input type="checkbox" class="user-checkbox" value="{user_id}"/>
+          </div>
+          
+          <div class="user-meta flex flex-wrap gap-2 mb-3 text-xs">
+            <span class="px-2 py-1 rounded-full {is_admin ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+              {is_admin ? '관리자' : '일반사용자'}
+            </span>
+            <span class="px-2 py-1 rounded-full {is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+              {is_active ? '활성' : '비활성'}
+            </span>
+          </div>
+          
+          <div class="user-stats text-sm text-gray-600 mb-3">
+            <div>가입: {created_at}</div>
+            <div>게시글: {post_count}개, 댓글: {comment_count}개</div>
+          </div>
+          
+          <div class="user-actions flex space-x-2">
+            <button 
+              class="flex-1 py-1 px-3 text-blue-600 border border-blue-600 rounded text-sm hover:bg-blue-50"
+              data-action="toggle-admin" 
+              data-user-id="{user_id}"
+            >
+              {is_admin ? '일반화' : '관리자화'}
+            </button>
+            <button 
+              class="flex-1 py-1 px-3 text-red-600 border border-red-600 rounded text-sm hover:bg-red-50"
+              data-action="toggle-status" 
+              data-user-id="{user_id}"
+            >
+              {is_active ? '비활성화' : '활성화'}
+            </button>
+          </div>
+        </div>
+        
+        <!-- More user cards... -->
+      </div>
+    </div>
+    
+    <!-- Bulk Actions -->
+    <div class="bulk-actions p-4 border-t bg-gray-50 hidden" id="bulk-actions">
+      <div class="flex items-center justify-between">
+        <div class="selected-info text-sm text-gray-600">
+          <span class="selected-count">0</span>명 선택됨
+        </div>
+        
+        <div class="actions space-x-2">
+          <button class="px-3 py-1 text-sm text-blue-600 border border-blue-600 rounded hover:bg-blue-50">
+            일괄 관리자화
+          </button>
+          <button class="px-3 py-1 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50">
+            일괄 일반화
+          </button>
+          <button class="px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50">
+            일괄 비활성화
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Pagination -->
+  <div class="pagination mt-6">
+    <div class="flex justify-center">
+      <nav class="pagination-nav flex items-center space-x-2">
+        <a href="/admin/users?page=1" class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50">처음</a>
+        <a href="/admin/users?page={prev_page}" class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50">이전</a>
+        <a href="/admin/users?page=1" class="px-3 py-2 text-sm text-white bg-blue-600 border border-blue-600 rounded-md">1</a>
+        <a href="/admin/users?page=2" class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50">2</a>
+        <a href="/admin/users?page=3" class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50">3</a>
+        <a href="/admin/users?page={next_page}" class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50">다음</a>
+        <a href="/admin/users?page={last_page}" class="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 border border-gray-300 rounded-md hover:bg-gray-50">끝</a>
+      </nav>
+    </div>
+  </div>
+</main>

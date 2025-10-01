@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__supabase__execute_sql",
+      "Bash(docker exec:*)",
+      "mcp__puppeteer__puppeteer_navigate",
+      "mcp__puppeteer__puppeteer_fill",
+      "mcp__puppeteer__puppeteer_click",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "Bash(docker logs:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(python:*)",
+      "Bash(curl:*)",
+      "mcp__puppeteer__puppeteer_evaluate",
+      "Bash(cat:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

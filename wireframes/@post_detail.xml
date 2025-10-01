@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<main class="container mx-auto px-4 py-8">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb mb-6">
+    <div class="text-sm text-gray-500">
+      <a href="/" class="hover:text-blue-600">홈</a>
+      <span class="mx-2">></span>
+      <a href="/boards" class="hover:text-blue-600">게시판</a>
+      <span class="mx-2">></span>
+      <a href="/boards/{slug}" class="hover:text-blue-600">{board_name}</a>
+      <span class="mx-2">></span>
+      <span class="text-gray-800">{post_title}</span>
+    </div>
+  </nav>
+  
+  <!-- Post Content -->
+  <article class="post-article bg-white rounded-lg shadow border">
+    <!-- Post Header -->
+    <header class="post-header p-6 border-b">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">{post_title}</h1>
+      
+      <!-- Post Meta -->
+      <div class="post-meta flex flex-col md:flex-row md:items-center md:justify-between text-sm text-gray-500">
+        <div class="meta-left flex items-center space-x-4 mb-2 md:mb-0">
+          <div class="author">
+            <span class="font-medium text-gray-700">{author_name}</span>
+          </div>
+          <div class="date">{created_at}</div>
+          <div class="views">조회 {view_count}</div>
+        </div>
+        
+        <!-- Post Actions (Owner/Admin only) -->
+        <div class="post-actions flex space-x-2 owner-only hidden">
+          <a 
+            href="/posts/{post_id}/edit" 
+            class="px-3 py-1 text-blue-600 border border-blue-600 rounded hover:bg-blue-50 text-sm"
+          >
+            수정
+          </a>
+          <button 
+            class="delete-btn px-3 py-1 text-red-600 border border-red-600 rounded hover:bg-red-50 text-sm"
+            data-post-id="{post_id}"
+          >
+            삭제
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Post Body -->
+    <div class="post-body p-6">
+      <div class="prose max-w-none">
+        {post_content}
+      </div>
+    </div>
+    
+    <!-- Post Footer -->
+    <footer class="post-footer p-6 border-t bg-gray-50">
+      <div class="flex justify-between items-center">
+        <div class="post-navigation">
+          <!-- Previous/Next post links -->
+          <div class="nav-links text-sm space-y-1">
+            <div class="prev-post">
+              <span class="text-gray-500">이전글:</span>
+              <a href="/posts/{prev_post_id}" class="text-blue-600 hover:text-blue-800 ml-2">
+                {prev_post_title}
+              </a>
+            </div>
+            <div class="next-post">
+              <span class="text-gray-500">다음글:</span>
+              <a href="/posts/{next_post_id}" class="text-blue-600 hover:text-blue-800 ml-2">
+                {next_post_title}
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="back-to-list">
+          <a 
+            href="/boards/{board_slug}" 
+            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+          >
+            목록으로
+          </a>
+        </div>
+      </div>
+    </footer>
+  </article>
+  
+  <!-- Comments Section -->
+  <section class="comments-section mt-8">
+    <div class="bg-white rounded-lg shadow border">
+      <!-- Comments Header -->
+      <header class="comments-header p-6 border-b">
+        <h3 class="text-lg font-semibold text-gray-800">
+          댓글 <span class="text-blue-600">{comment_count}</span>개
+        </h3>
+      </header>
+      
+      <!-- Comment Form (Logged in users only) -->
+      <div class="comment-form p-6 border-b logged-in-only hidden">
+        <form action="/posts/{post_id}/comments" method="POST" class="comment-form-element">
+          <input type="hidden" name="csrf_token" value="{csrf_token}"/>
+          <div class="mb-4">
+            <textarea 
+              name="content" 
+              rows="3" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="댓글을 입력하세요..."
+              required
+            ></textarea>
+          </div>
+          <div class="flex justify-end">
+            <button 
+              type="submit" 
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+            >
+              댓글 작성
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Comments List -->
+      <div class="comments-list" id="comments-list">
+        <!-- Comment Item -->
+        <div class="comment-item p-6 border-b last:border-b-0">
+          <!-- Parent Comment -->
+          <div class="comment-content">
+            <div class="comment-header flex items-center justify-between mb-3">
+              <div class="comment-meta text-sm text-gray-500">
+                <span class="author font-medium text-gray-700">{comment_author}</span>
+                <span class="date ml-2">{comment_date}</span>
+              </div>
+              
+              <!-- Comment Actions -->
+              <div class="comment-actions comment-owner-only hidden">
+                <button class="text-blue-600 text-sm mr-2 edit-comment-btn">수정</button>
+                <button class="text-red-600 text-sm delete-comment-btn">삭제</button>
+              </div>
+            </div>
+            
+            <div class="comment-body text-gray-800 mb-3">
+              {comment_content}
+            </div>
+            
+            <div class="comment-footer">
+              <button class="reply-btn text-blue-600 text-sm hover:text-blue-800">
+                답글
+              </button>
+            </div>
+          </div>
+          
+          <!-- Reply Form (Initially hidden) -->
+          <div class="reply-form mt-4 ml-8 hidden">
+            <form action="/posts/{post_id}/comments" method="POST">
+              <input type="hidden" name="csrf_token" value="{csrf_token}"/>
+              <input type="hidden" name="parent_id" value="{comment_id}"/>
+              <div class="mb-3">
+                <textarea 
+                  name="content" 
+                  rows="2" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="답글을 입력하세요..."
+                  required
+                ></textarea>
+              </div>
+              <div class="flex justify-end space-x-2">
+                <button type="button" class="cancel-reply-btn px-3 py-1 text-gray-600 border border-gray-300 rounded text-sm">
+                  취소
+                </button>
+                <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded text-sm">
+                  답글 작성
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Child Comments (Replies) -->
+          <div class="replies ml-8 mt-4">
+            <div class="reply-item p-4 bg-gray-50 rounded">
+              <div class="comment-header flex items-center justify-between mb-2">
+                <div class="comment-meta text-sm text-gray-500">
+                  <span class="author font-medium text-gray-700">{reply_author}</span>
+                  <span class="date ml-2">{reply_date}</span>
+                </div>
+                
+                <div class="comment-actions reply-owner-only hidden">
+                  <button class="text-blue-600 text-sm mr-2">수정</button>
+                  <button class="text-red-600 text-sm">삭제</button>
+                </div>
+              </div>
+              
+              <div class="comment-body text-gray-800 text-sm">
+                {reply_content}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- More comments... -->
+      </div>
+      
+      <!-- Empty Comments State -->
+      <div class="empty-comments text-center py-8 hidden">
+        <div class="text-gray-400 text-4xl mb-3">💬</div>
+        <p class="text-gray-500">첫 번째 댓글을 작성해보세요</p>
+      </div>
+    </div>
+  </section>
+</main>
