@@ -80,7 +80,7 @@
 - **게시판 slug**: notice, newsletter, free 사용
 
 #### 초기 데이터 설정
-- **관리자 계정**: masunok@example.com / msk040830*
+- **관리자 계정**: soma@kcc.co.kr / *
 - **초기 게시판**:
   - notice (공지사항) - 관리자만 작성
   - newsletter (뉴스레터) - 관리자만 작성
@@ -500,13 +500,6 @@ app/routers/auth.py          # Form 의존성 사용으로 변경
    - auth_service.py, auth.py 파일 클린업
    - 코드 정리 후에도 로그인 기능 정상 작동 확인
 
-#### 생성된 새 테스트 사용자 목록
-```
-1. alice.new@example.com / alice123!@# (로그인 테스트 완료)
-2. bob.new@example.com / bob123!@#$ (로그인 테스트 완료)
-3. charlie.new@example.com / charlie123!
-4. diana.new@example.com / diana123!@
-```
 
 #### 업데이트된 파일
 - **TESTDATA.md**: 새로운 테스트 사용자 정보 및 기존 사용자 사용 불가 표시

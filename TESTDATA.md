@@ -4,8 +4,8 @@
 
 ### 관리자 계정
 ```
-이메일: masunok@example.com
-비밀번호: msk040830*
+이메일: soma@kcc.co.kr
+비밀번호: *
 사용자명: admin
 표시이름: 관리자
 권한: is_admin = true
@@ -29,25 +29,25 @@
 
 #### 현재 사용 가능한 테스트 사용자
 ```
-1. 새 앨리스 (alice.new@example.com / alice123!@#)
+1. 새 앨리스 (alice.new@example.com / *)
    - 사용자명: alice_new
    - 표시이름: New Alice
    - 권한: 일반 사용자
    - 상태: 로그인 테스트 완료 ✅
 
-2. 새 밥 (bob.new@example.com / bob123!@#$)
+2. 새 밥 (bob.new@example.com / *)
    - 사용자명: bob_new
    - 표시이름: New Bob
    - 권한: 일반 사용자
    - 상태: 계정 생성 완료 ✅
 
-3. 새 찰리 (charlie.new@example.com / charlie123!)
+3. 새 찰리 (charlie.new@example.com / *)
    - 사용자명: charlie_new
    - 표시이름: New Charlie
    - 권한: 일반 사용자
    - 상태: 계정 생성 완료 ✅
 
-4. 새 다이애나 (diana.new@example.com / diana123!@)
+4. 새 다이애나 (diana.new@example.com / *)
    - 사용자명: diana_new
    - 표시이름: New Diana
    - 권한: 일반 사용자
@@ -103,17 +103,6 @@
 - 모든 사용자가 다양한 댓글 참여
 ```
 
-### 로그인 테스트 계정 정보
-```
-관리자 로그인:
-- 이메일: soma@kcc.co.kr
-- 비밀번호: msk040830*
-
-일반 사용자 로그인 (2025-09-22 정리 완료):
-- 앨리스: alice.new@example.com / alice123!@#
-- 밥: bob.new@example.com / bob123!@#$
-- 찰리: charlie.new@example.com / charlie123!
-- 다이애나: diana.new@example.com / diana123!@
 
 기존 사용자 (완전 삭제됨):
 - alice@example.com, bob@example.com, charlie@example.com, diana@example.com
