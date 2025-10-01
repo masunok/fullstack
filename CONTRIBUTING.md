@@ -13,7 +13,7 @@ git clone https://github.com/masunok/fullstack.git
 cd aizeva
 
 # 3. Upstream 설정
-git remote add upstream https://github.com/ORIGINAL_OWNER/aizeva.git
+git remote add upstream https://github.com/masunok/fullstack.git
 ```
 
 ### 2. 개발 환경 설정
