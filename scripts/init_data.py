@@ -18,8 +18,8 @@ SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
 # 초기 데이터
 ADMIN_USER = {
-    "email": "masunok@example.com",
-    "password": "msk040830*",
+    "email": "soma@kcc.co.kr",
+    "password": "*",
     "username": "admin",
     "display_name": "관리자",
     "is_admin": True

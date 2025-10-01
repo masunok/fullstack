@@ -145,7 +145,7 @@ pytest --cov=app --cov-report=html
 
 초기 관리자 계정 (scripts/init_data.py 실행 후):
 - **이메일**: soma@kcc.co.kr
-- **비밀번호**: msk040830*
+- **비밀번호**: *
 
 ⚠️ **프로덕션 환경에서는 반드시 비밀번호를 변경하세요!**
 
